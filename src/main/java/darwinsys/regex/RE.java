@@ -31,6 +31,8 @@ import java.util.*;
  * \\w	character in a word (\w+ for a word)
  * \\d	numeric digit (\d+ for a number)
  * \\s	white space
+ * ()	grouping (not implemented yet)
+ * |	alternation (not implemented yet)
  * </PRE>
  *
  * @see	bugs.html - the bug list and TODO file.

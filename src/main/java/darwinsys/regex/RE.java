@@ -2,23 +2,43 @@ import java.util.*;
 
 /**
  * A small regular expressions package for Java.
- *
+ * <P>
  * This is a pretty simple implementation, compiling the pattern
- * into an array of SE objects, and interpreting it. 
+ * into an array of sub-expression (SE) objects, and interpreting it. 
  * It is more intended to be pedantic than efficient: as Henry Spencer
  * said of his (much more sophisticated) C-language regexp,
  * replacing the innards of egrep with this code would be a mistake.
- *
+ * <P>
+ * The subset of regular expression characters 
+ * that this API accepts is as follows. Consult the OReilly book 
+ * <I>Mastering Regular Expressions</I> or any book on UNIX
+ * user commands, if you are not familiar with regular expressions.
+ * <PRE>
+ * ^	begin of line/string
+ * $	end of line/string
+ * .	any one character
+ * [...]	any one character from those listed
+ * [^...]	any one character not from those listed
+ * {m,n}	multiplier for from m to n repetitions
+ * {m,} 	multiplier for from m repetitions on up
+ * {,n}		multiplier for zero up to n repetitions
+ * *	multiplier for zero or more repetitions (short for {0,})
+ * +	multiplier for one or more repetitions (short for {1,})
+ * ?	multiplier for zero or one repetitions (short for {0,1})
+ * \w	characters in a word (\w+ for a word)
+ * \d	numeric digits (\d+ for a number)
+ * \f	numeric digits plus . e f (\f+ for floating number)
+ * <P>
  * NOT FINISHED. TODO:
  * Get doMatch() working 100% for all types.
  * esc() must return an SE so it can do \w \s \d as well as \n \t \b etc.
  * Pass array of SEs into amatch() for use of Closures, write SErep.amatch().
  * NO NO NO -- put the iterations in doMatch, not ses amatch!
- *
+ * <P>
  * TODO: More Functionality:
  * Write versions that return Match(), not just boolean version.
  * Use that to write sub() functionality.
- * Add Perl-style REs \w \n etc.
+ * Add Perl-style RE components \w \d etc.
  * Add alternation and grouping () |
  *
  * @author Ian F. Darwin, ian@darwinsys.com.
@@ -57,14 +77,25 @@ public class RE {
 	public static final char UNICHAR = u;		// Unicode char, like Java
 	public static final char WORDCHAR = w;	// XXX Perlish
 
-	final int ERR = -1;
+	protected final int ERR = -1;
 
 	protected SE[] myPat;
 	protected String origPatt;
 
+	// Since these next five REs are constant, we can use the "flyweight"
+	// Design Pattern for them - we only need one instance of each, ever.
+	// This does NOT extend to multipliers like * + ?
+
 	/** The "flyweight" SE for \w */
-	// XXX must split SE into its own set of classes.
-	// protected static SE wordChars = new SEccl("[a-zA-Z_0-9]", new Int(0));
+	protected static SE myWord = new SEccl("[a-zA-Z_0-9]", new Int(0));
+	/** The "flyweight" SE for \d */
+	protected static SE myDigits = new SEccl("[0-9]", new Int(0));
+	/** The "flyweight" for "." */
+	protected static SE myANY = new SEany();
+	/** The "flyweight" for "^" */
+	protected static SE myBOL = new SEbol();
+	/** The "flyweight" for "$" */
+	protected static SE myEOL = new SEeol();
 
 	/** Construct an RE object, given a pattern.
 	 * @throws RESyntaxException if bad syntax.
@@ -167,13 +198,13 @@ public class RE {
 			char c = arg.charAt(i.get());
 			lj = j;
 			if (c == ANY) {
-				v.addElement(new SEany());
+				v.addElement(myAny);
 			// "^" only special at beginning.
 			} else if (c == BOL && i.get() == 0) {
-				v.addElement(new SEbol());
+				v.addElement(new myBOL);
 			// "$" only special at end.
 			} else if (c == EOL && i.get() == arg.length()-1) {
-				v.addElement(new SEeol());
+				v.addElement(myEOL);
 			} else if (c == CCL) {
 				v.addElement(new SEccl(arg, i));
 			// closures (*,+,?,{,} not special unless they follow something.

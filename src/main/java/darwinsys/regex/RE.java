@@ -109,8 +109,7 @@ public class RE {
 		if (singleton == null)
 			singleton = new RE("");
 		SE[] thispat = singleton.compile(patt);
-		//return singleton.match(thispat, str);
-		return null;
+		return singleton.getMatch(thispat, str, false);
 	}
 
 	/** Match the compiled pattern stored in the RE in a given String.
@@ -140,7 +139,7 @@ public class RE {
 	 * with control over case sensitivity.
 	 */
 	public Match match(String str, boolean ignoreCase) {
-	 	return null;			// XXX Not Implemented Yet
+	 	return getMatch(myPat, str, ignoreCase);
 	}
 
 	//-----------------------------------------------------------------
@@ -346,12 +345,22 @@ public class RE {
 	}
 
 	/* doMatch -- find pattern match anywhere on line.
+	 */
+	protected static boolean doMatch(
+		SE[] patt, String line, boolean ignoreCase) {
+			return getMatch(patt, line, ignoreCase) != null;
+	}
+
+	/** Match -- generate a Match() object describing a match.
 	 * The very heart of the matching engine, or "interpreter".
 	 */
-	protected static boolean doMatch(SE[] patt, String line, boolean ignoreCase) {
+	protected static Match getMatch(
+		SE[] patt, String line, boolean ignoreCase) {
+
 		Int	i = new Int();
 		int il;
 		boolean failed = false;
+		int lastStart = 0;		// to build a Match at the end.
 
 		// Try patt starting at each char position in line.
 		// i gets incr()d by each amatch() to skip over what it looks at.
@@ -359,6 +368,7 @@ public class RE {
 		do {
 			Debug.println("doMatch", "doMatch: il="+il);
 			failed = false;
+			lastStart = il;
 			for (int ip=0; ip<patt.length; ip++) {
 				Debug.println("doMatch", "doMatch: ip="+ip);
 				if (!patt[ip].amatch(line, i)) {
@@ -369,12 +379,14 @@ public class RE {
 			// If matched all elements of patt, we have ignition!
 			if (!failed) {
 				Debug.println("doMatch", "doMatch() all patt at " +il+ "; return true");
-				return true;
+				return new Match(lastStart, i.get());
 			}
 			il++; i.set(il);
 		} while (il<line.length());
 		Debug.println("doMatch", "doMatch: Got to end so return " + !failed);
-		return !failed;
+		if (!failed)
+			throw new IllegalArgumentException("!failed but not returned");
+		return null;
 	}
 
 	/* esc - handle C-like escapes

@@ -9,4 +9,7 @@ public class Match {
 		start = s;
 		end   = e;
 	}
+	public String toString() {
+		return "Match(" + start + "," + end + ")";
+	}
 }

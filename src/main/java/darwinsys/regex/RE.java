@@ -127,6 +127,8 @@ public class RE {
 		int jstart;
 
 		++i;			/* skip over [ */
+		if (i>=arg.length())
+			return false;
 		if (arg.charAt(i) == NEGATE) {
 			patt.append(NCCL);
 			++i;

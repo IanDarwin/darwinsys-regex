@@ -346,7 +346,7 @@ public class RE {
 	}
 
 	/* doMatch -- find pattern match anywhere on line.
-	 * The sacred heart of the matching engine.
+	 * The very heart of the matching engine, or "interpreter".
 	 */
 	protected static boolean doMatch(SE[] patt, String line, boolean ignoreCase) {
 		Int	i = new Int();
@@ -355,7 +355,8 @@ public class RE {
 
 		// Try patt starting at each char position in line.
 		// i gets incr()d by each amatch() to skip over what it looks at.
-		for (il=0, i.set(il); il<line.length(); il++, i.set(il)) {
+		i.set(il = 0);
+		do {
 			Debug.println("doMatch", "doMatch: il="+il);
 			failed = false;
 			for (int ip=0; ip<patt.length; ip++) {
@@ -370,7 +371,8 @@ public class RE {
 				Debug.println("doMatch", "doMatch() all patt at " +il+ "; return true");
 				return true;
 			}
-		}
+			il++; i.set(il);
+		} while (il<line.length());
 		Debug.println("doMatch", "doMatch: Got to end so return " + !failed);
 		return !failed;
 	}

@@ -171,7 +171,27 @@ public class RE {
 	// to make a named class for something as simple as begin-of-line.
 
 	/** The "flyweight" SE for \w */
-	protected static SE myWordChars = new SEccl("[a-zA-Z_0-9]", new Int(0));
+	protected static SE myWordChars = new SE() {
+		public boolean amatch(String a, Int i) {
+			boolean match = Character.isLetterOrDigit(a.charAt(i.get()));
+			if (match) i.incr();
+			return match;
+		}
+		public String toString() {
+			return "\\w";
+		}
+	};
+	/** The "flyweight" SE for \W */
+	protected static SE myNOTWordChars = new SE() {
+		public boolean amatch(String a, Int i) {
+			boolean match = !Character.isLetterOrDigit(a.charAt(i.get()));
+			if (match) i.incr();
+			return match;
+		}
+		public String toString() {
+			return "\\W";
+		}
+	};
 	/** The "flyweight" SE for \d */
 	protected static SE myDigits = new SE() {
 		public boolean amatch(String a, Int i) {
@@ -183,6 +203,21 @@ public class RE {
 			return "\\d";
 		}
 	};
+	/** The "flyweight" SE for \D */
+	protected static SE myDigits = new SE() {
+		public boolean amatch(String a, Int i) {
+			boolean match = !Character.isDigit(a.charAt(i.get()));
+			if (match) i.incr();
+			return match;
+		}
+		public String toString() {
+			return "\\D";
+		}
+	};
+	/** The "flyweight" SE for \f */
+	protected static SE myFloatChars = new SEccl("[0-9ef.]", new Int(0));
+	/** The "flyweight" SE for \F */
+	protected static SE myFloatChars = new SEccl("[^0-9ef.]", new Int(0));
 	/** The "flyweight" SE for \s */
 	protected static SE mySpaces = new SE() {
 		public boolean amatch(String a, Int i) {
@@ -192,6 +227,17 @@ public class RE {
 		}
 		public String toString() {
 			return "\\s";
+		}
+	};
+	/** The "flyweight" SE for \S */
+	protected static SE mySpaces = new SE() {
+		public boolean amatch(String a, Int i) {
+			boolean match = !Character.isWhitespace(a.charAt(i.get()));
+			if (match) i.incr();
+			return match;
+		}
+		public String toString() {
+			return "\\S";
 		}
 	};
 	/** The "flyweight" for "." */
@@ -347,16 +393,26 @@ public class RE {
 		switch (c) {
 		case d:
 			return myDigits;
+		case D:
+			return myNOTDigits;
+		case f:
+			return myFloatChars;
+		case F:
+			return myNOTFloatChars;
 		case n:
 			return new SEchar(\n);
 		case r:
 			return new SEchar(\r);
 		case s:
 			return mySpaces;
+		case S:
+			return myNOTSpaces;
 		case t:
 			return new SEchar(\t);
 		case w:
 			return myWordChars;
+		case W:
+			return myNOTWordChars;
 		case \\:
 			return new SEchar(\\);
 		default:

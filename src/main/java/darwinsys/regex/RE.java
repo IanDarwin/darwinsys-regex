@@ -82,70 +82,8 @@ public class RE {
 
 	protected final int ERR = -1;
 
-	protected SE[] myPat;
+	protected SE[] myPat; 
 	protected String origPatt;
-
-	// Since these next few REs are constant, we can use the "flyweight"
-	// Design Pattern for them - we only need one instance of each, ever.
-	// This can NOT, of course, extend to multipliers like * + ?
-	// Some of them are subclassed right here, since we dont need
-	// to make a named class for something as simple as begin-of-line.
-
-	/** The "flyweight" SE for \w */
-	protected static SE myWordChars = new SEccl("[a-zA-Z_0-9]", new Int(0));
-	/** The "flyweight" SE for \d */
-	protected static SE myDigits = new SE() {
-		public boolean amatch(String a, Int i) {
-			boolean match = Character.isDigit(a.charAt(i.get()));
-			if (match) i.incr();
-			return match;
-		}
-		public String toString() {
-			return "\\d";
-		}
-	};
-	/** The "flyweight" SE for \s */
-	protected static SE mySpaces = new SE() {
-		public boolean amatch(String a, Int i) {
-			boolean match = Character.isWhitespace(a.charAt(i.get()));
-			if (match) i.incr();
-			return match;
-		}
-		public String toString() {
-			return "\\s";
-		}
-	};
-	/** The "flyweight" for "." */
-	protected static SE myAny = new SE() {
-		public String toString() { return "SE(.)"; }
-		public boolean amatch(String ln, Int i) {
-			if (ln.length() >= i.get())
-				return false;					// end of string
-			i.incr();
-			return true;
-		}
-	};
-	/** The "flyweight" for "^" */
-	protected static SE myBOL = new SE() {
-		public String toString() { return "BOL"; }
-		public boolean amatch(String ln, Int i) {
-			if (i.get()>0)
-				return false;
-			// no i.incr() since we dont use any chars in ln
-			return true;
-		}
-	};
-	/** The "flyweight" for "$" */
-	protected static SE myEOL = new SE() {
-		public String toString() { return "EOL"; }
-		public boolean amatch(String ln, Int i) {
-			if (i.get() == ln.length()) {
-				// no i.incr() since we dont use any chars in ln
-				return true;
-			}
-			return false;
-		}
-	};
 
 	/** Construct an RE object, given a pattern.
 	 * @throws RESyntaxException if bad syntax.
@@ -225,6 +163,68 @@ public class RE {
 		res.append(]);
 		return res.toString();
 	}
+
+	// Since these next few REs are constant, we can use the "flyweight"
+	// Design Pattern for them - we only need one instance of each, ever.
+	// This can NOT, of course, extend to multipliers like * + ?
+	// Some of them are subclassed right here, since we dont need
+	// to make a named class for something as simple as begin-of-line.
+
+	/** The "flyweight" SE for \w */
+	protected static SE myWordChars = new SEccl("[a-zA-Z_0-9]", new Int(0));
+	/** The "flyweight" SE for \d */
+	protected static SE myDigits = new SE() {
+		public boolean amatch(String a, Int i) {
+			boolean match = Character.isDigit(a.charAt(i.get()));
+			if (match) i.incr();
+			return match;
+		}
+		public String toString() {
+			return "\\d";
+		}
+	};
+	/** The "flyweight" SE for \s */
+	protected static SE mySpaces = new SE() {
+		public boolean amatch(String a, Int i) {
+			boolean match = Character.isWhitespace(a.charAt(i.get()));
+			if (match) i.incr();
+			return match;
+		}
+		public String toString() {
+			return "\\s";
+		}
+	};
+	/** The "flyweight" for "." */
+	protected static SE myAny = new SE() {
+		public String toString() { return "SE(.)"; }
+		public boolean amatch(String ln, Int i) {
+			if (ln.length() >= i.get())
+				return false;					// end of string
+			i.incr();
+			return true;
+		}
+	};
+	/** The "flyweight" for "^" */
+	protected static SE myBOL = new SE() {
+		public String toString() { return "BOL"; }
+		public boolean amatch(String ln, Int i) {
+			if (i.get()>0)
+				return false;
+			// no i.incr() since we dont use any chars in ln
+			return true;
+		}
+	};
+	/** The "flyweight" for "$" */
+	protected static SE myEOL = new SE() {
+		public String toString() { return "EOL"; }
+		public boolean amatch(String ln, Int i) {
+			if (i.get() == ln.length()) {
+				// no i.incr() since we dont use any chars in ln
+				return true;
+			}
+			return false;
+		}
+	};
 
 	/* compile -- make pattern from arg.
 	 * @return compiled pattern in an array of SE

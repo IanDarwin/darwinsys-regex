@@ -148,7 +148,7 @@ public class RE {
 	 * @return A Match object indicating the position & length of the match.
 	 * Null if no match.
 	 */
-	public Match getMatch(String str){ return match(str, false); }
+	public boolean getMatch(String str){ return match(str, false); }
 
 	/** Match the compiled pattern in this RE against a given string,
 	 * with control over case sensitivity.

@@ -10,13 +10,14 @@ public class SEchar extends SE {
 	public String toString() { return "SE(" + val + ')'; }
 
 	public boolean amatch(String ln, Int i) {
-		System.out.println("SEchar.amatch("+ln+','+i.get() + ')');
+		System.out.println("SEchar.amatch("+ln+','+i.get() + "), seek" + val);
 		if (i.get() < ln.length()) {
 			boolean success = (ln.charAt(i.get()) == val);
 			System.out.println("SEchar.amatch: success="+success);
 			i.incr();
 			return success;
 		} 
+		System.out.println("SEchar.amatch: hit end of string");
 		return false;					// end of string
 	}
 }

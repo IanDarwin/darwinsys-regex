@@ -26,7 +26,7 @@ public class SEmult extends SE {
 		return sb.toString();
 	}
 
-	/** Construct a Closure */
+	/** Construct a Multiplier */
 	public SEmult(int min, int max, SE ta) {
 		if (minimum < 0)
 			throw new IllegalArgumentException(
@@ -36,9 +36,17 @@ public class SEmult extends SE {
 		target = ta;
 	}
 
-	/** Match a closure */
+	/** Match target at ln[i], multiple times */
 	public boolean amatch(String ln, Int i) {
-		throw new IllegalArgumentException(
-			"Closure amatch() called directly");
+		System.out.println("SEmult amatch() called on " + ln.charAt(i.get()));
+		boolean metMin = minimum == 0; // if 0 minimum, already met minimum.
+		for (int j=minimum; j<maximum && i.get()<ln.length(); j++) {
+			if (!target.amatch(ln, i))
+				break;
+			// else at least one matched, so we've met our minimum
+			metMin = true;
+		}
+		// Now we either hit end of line or a failed match.
+		return metMin;
 	}
 }

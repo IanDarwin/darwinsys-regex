@@ -173,7 +173,7 @@ public class RE {
 	public String toString() {
 		if (myPat == null || myPat.length == 0)
 			return "RE[null]";
-		StringBuffer res = new StringBuffer("RE[" + origPatt + "-->");
+		StringBuffer res = new StringBuffer("RE[");
 		for (int i=0; i<myPat.length; i++) {
 			if (i>0)
 				res.append(,);

@@ -1,6 +1,6 @@
 package com.darwinsys.regexp;
 
-import com.darwinsys.util.*;
+import com.darwinsys.util.Debug;
 
 /* SEchar - represent one ordinary character.
  * @author Ian Darwin, ian@darwinsys.com

@@ -1,6 +1,6 @@
 package com.darwinsys.regexp;
 
-import com.darwinsys.util.*;
+import com.darwinsys.util.Debug;
 import java.util.*;
 
 /**
@@ -47,9 +47,7 @@ import java.util.*;
  * @version $Id$
  */
 
-//+
 public class RE {
-//-
 
 	public static final char MULT_ANY = '*';
 	public static final char MULT_ZERO_OR_ONE = '?';

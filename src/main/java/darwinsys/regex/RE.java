@@ -1,5 +1,6 @@
 package com.darwinsys.regexp;
 
+import com.darwinsys.util.*;
 import java.util.*;
 
 /**

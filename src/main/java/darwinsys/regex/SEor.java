@@ -14,7 +14,7 @@ public class SEor extends SE {
 	}
 
 	/** Construct a SEor */
-	public SEmult(SE l, SE r) {
+	public SEor(SE l, SE r) {
 		left = l;
 		right = r;
 	}

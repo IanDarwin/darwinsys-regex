@@ -21,8 +21,6 @@ public class SEor extends SE {
 
 	/** Match either left OR right at ln[i]. */
 	public boolean amatch(String ln, Int i) {
-		if (left.amatch(ln, i) || right.amatch(ln, i))
-			return true;
-		return false;
+		return left.amatch(ln, i) || right.amatch(ln, i);
 	}
 }

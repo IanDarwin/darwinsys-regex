@@ -12,7 +12,7 @@ import java.util.*;
  * NOT FINISHED. TODO:
  * Get doMatch() working 100% for all types.
  * esc() must return an SE so it can do \w \s \d as well as \n \t \b etc.
- * Pass array of SEs into amatch() for use of Closures, write SEclos.amatch().
+ * Pass array of SEs into amatch() for use of Closures, write SErep.amatch().
  * NO NO NO -- put the iterations in doMatch, not ses amatch!
  *
  * TODO: More Functionality:
@@ -180,13 +180,13 @@ public class RE {
 			// replace element it follows with CLOSURE referring to it
 			} else if (i.get() > 0 && c == CLOSURE_ANY) {	// * = {0,}
 				int last = v.size()-1;
-				v.setElementAt(new SEclos(0, SEclos_NOMAX, (SE)v.elementAt(last)), last);
+				v.setElementAt(new SErep(0, SErep.NOMAX, (SE)v.elementAt(last)), last);
 			} else if (i.get() > 0 && c == CLOSURE_ONE_OR_MORE) { // + -> {1,}
 				int last = v.size()-1;
-				v.setElementAt(new SEclos(1, SEclos_NOMAX, (SE)v.elementAt(last)), last);
+				v.setElementAt(new SErep(1, SErep.NOMAX, (SE)v.elementAt(last)), last);
 			} else if (i.get() > 0 && c == CLOSURE_ZERO_OR_ONE) { // ? -> {0,1}
 				int last = v.size()-1;
-				v.setElementAt(new SEclos(0, 1, (SE)v.elementAt(last)), last);
+				v.setElementAt(new SErep(0, 1, (SE)v.elementAt(last)), last);
 			} else {
 				// "Ordinary" character.
 				v.addElement(new SEchar(esc(arg, i)));
@@ -248,174 +248,6 @@ public class RE {
 		return a.charAt(i.get());
 	}
 
-	/** Represent one sub-expression in an RE. */
-	abstract class SE {
-		/** Start matching at i in ln. Increment i as much as matches.
-		 * Return true if valid match, false if not.
-		 */
-		public abstract boolean amatch(String ln, Int i);
-	}
-
-	class SEchar extends SE {
-		char val;
-
-		public SEchar(char ch) { val = ch; }
-
-		public String toString() { return "SE(" + val + ); }
-
-		public boolean amatch(String ln, Int i) {
-			System.out.println("SEchar.amatch("+ln+,+i.get() + ));
-			if (i.get() < ln.length()) {
-				boolean success = (ln.charAt(i.get()) == val);
-				System.out.println("SEchar.amatch: success="+success);
-				i.incr();
-				return success;
-			} 
-			return false;					// end of string
-		}
-	}
-
-	class SEany extends SE {
-		public String toString() { return "SE(.)"; }
-		public boolean amatch(String ln, Int i) {
-			if (ln.length() >= i.get())
-				return false;					// end of string
-			i.incr();
-			return true;
-		}
-	}
-
-	class SEbol extends SE {
-		public String toString() { return "SE(^)"; }
-		public boolean amatch(String ln, Int i) {
-			if (i.get()>0)
-				return false;
-			// no i.incr() since we dont use any chars in ln
-			return true;
-		}
-	}
-
-	class SEeol extends SE {
-		public String toString() { return "SE($)"; }
-		public boolean amatch(String ln, Int i) {
-			if (i.get() == ln.length() - 1) {
-				// no i.incr() since we dont use any chars in ln
-				return true;
-			}
-			return false;
-		}
-	}
-
-	/** SEccl represents on Character Class */
-	class SEccl extends SE {
-		int len = 0;
-		boolean negate = false;
-		StringBuffer val = new StringBuffer();
-
-		public String toString() {
-			return "SEccl[" + val.toString() + "]";
-		}
-
-		/** Construct a CCL. Some of this code was in "getCCL()" */
-		public SEccl(String arg, Int i) {
-			int jstart;
-
-			i.incr();			/* skip over [ */
-			if (i.get()>=arg.length())
-				throw new RESyntaxException("pattern ends with [");
-			if (arg.charAt(i.get()) == NEGCCL) {
-				negate = true;
-				i.incr();
-			}
-			// Expand the range
-			len = doDash(arg, i);
-			if (arg.charAt(i.get()) != CCLEND)
-				throw new RESyntaxException("CCL ends without ]");
-		}
-
-		/* doDash - expand dash shorthand set at src[i] to end of dest.
-		 * @return number of characters appended to dest.
-		 */
-		protected int doDash(String src, Int i) {
-
-			int startLen = val.length();
-
-			while (src.charAt(i.get()) != CCLEND && i.get()<src.length()) {
-				if (src.charAt(i.get()) == LITCHAR)
-					val.append(esc(src, i));
-				else if (src.charAt(i.get()) != DASH)
-					val.append(src.charAt(i.get()));
-				else if (val.length() == 0 || src.length() == i.get()+1)
-					val.append(DASH);	/* literal - */
-				else if (Character.isLetterOrDigit(src.charAt(i.get()-1)) && 
-					Character.isLetterOrDigit(src.charAt(i.get()+1)) &&
-					src.charAt(i.get()-1) <= src.charAt(i.get()+1)) {
-					for (int k = src.charAt(i.get()-1)+1; k <= src.charAt(i.get()+1); k++)
-						val.append((char)k);
-					i.incr();
-				}
-				else
-					val.append(DASH);
-				i.incr();
-			}
-			return val.length() - startLen;
-		}
-
-		/** match CCLs here */
-		public boolean amatch(String ln, Int i) {
-			if (!negate) {
-				if (i.get()<ln.length() && locate(ln.charAt(i.get())))
-					return true;
-			} else {
-				if (i.get()<ln.length() && !locate(ln.charAt(i.get())))
-					return true;
-			}
-			return false;
-		}
-
-		/* locate -- look for c in character class */
-		protected boolean locate(char c) {
-			for (int k = 0; k<val.length(); k++) {
-				if (val.charAt(k) == c)
-					return true;
-			}
-			return false;
-		}
-	}
-
-	/** The constant meaning no upper bound. */
-	protected final static int SEclos_NOMAX = Integer.MAX_VALUE;
-
-	/** SEclos represents one "Closure" or repetition */
-	class SEclos extends SE {
-		/** The minimum number of times that must match */
-		int minimum;
-		/** The maximum number number of times allowed for a match */
-		int maximum;
-		/** What SubExpression is this a closure of? */
-		SE target;
-
-		/** Make me printable */
-		public String toString() {
-			return "SEclos(" + target + "{" + minimum + "," + maximum + "})";
-		}
-
-		/** Construct a Closure */
-		public SEclos(int min, int max, SE ta) {
-			if (minimum < 0)
-				throw new IllegalArgumentException(
-					"Minimum must be non-negative");
-			minimum = min;
-			maximum = max;
-			target = ta;
-		}
-
-		/** Match a closure */
-		public boolean amatch(String ln, Int i) {
-			throw new IllegalArgumentException(
-				"Closure amatch() called directly");
-		}
-	}
 //+
 }
 //-

@@ -21,11 +21,15 @@
 public class RE {
 
 	public static final char CLOSURE = *;
+	public static final char ZERO_OR_ONE = ?;	// XXX
 	public static final char EOL = $;
 	public static final char BOL = ^;
 	public static final char ANY = .;
 	public static final char CCL = [;
 	public static final char CCLEND = ];
+	public static final char OR = |;			// XXX
+	public static final char GRP = (;			// XXX
+	public static final char GRPEND = );		// XXX
 	public static final char LITCHAR = \\;
 	public static final char NEGATE = !;
 	public static final char NCCL = x;
@@ -50,8 +54,8 @@ public class RE {
 
 	/** Match a pattern in a given string. Designed for light-duty
 	 * use, as it compiles the pattern each time.
-	 * For frequent use, construct an RE object, which stores
-	 * the pattern inside it.
+	 * For multiples uses of the same pattern, construct an RE object,
+	 * which stores the pattern inside it.
 	 */
 	public static Match match(String patt, String str){
 		StringBuffer thispat = compile(patt);
@@ -89,12 +93,14 @@ public class RE {
 	 * @throws RESyntaxException if bad syntax.
 	 */
 	protected static StringBuffer compile(String arg) throws RESyntaxException {
-		int lastj = 0, lj = 0;
+		int j = 0, lastj = 0, lj = 0;
 		boolean done = false;
 
 		StringBuffer patt = new StringBuffer(arg.length()*2); // guess length
 
-		for (int i=0; i<arg.length(); i++) {
+		int i=0;
+		while (!done && i<arg.length()) {
+			lj = j;
 			if (arg.charAt(i) == ANY) {
 				patt.append(ANY);
 			// "^" only special at beginning/
@@ -113,14 +119,17 @@ public class RE {
 					patt.charAt(lj) == CLOSURE)
 					break;	/* terminate loop */
 				else
-					patt.insert(lastj, CLOSURE); /* where orig. pattern began */
+					/* replaces stclose: lastj==where orig. pattern began */
+					patt.insert(lastj, CLOSURE);
+					++j;
 			} else {
 				// "Ordinary" char, but must be LITCHARd so we dont
 				// mix it up with ^ ! x etc.
-				patt.append(LITCHAR);
-				patt.append(esc(arg, i));
+				patt.append(LITCHAR);		++j;
+				patt.append(esc(arg, i));	++j;	// XXX patsize?
 			}
 			lastj = lj;
+			if (!done) ++i;
 		} 
 		if (done) {				/* finished early */
 			throw new RESyntaxException("incomplete pattern");

@@ -25,11 +25,16 @@ import java.util.*;
  * *	multiplier for zero or more repetitions (short for {0,})
  * +	multiplier for one or more repetitions (short for {1,})
  * ?	multiplier for zero or one repetitions (short for {0,1})
+ * \t	Tab character
+ * \r	return character (ASCII CR, Mac newline)
+ * \n	newline character (ASCII LF, Unix newline)
+ * \w	character in a word (\w+ for a word)
+ * \d	numeric digit (\d+ for a number)
+ * \s	white space
  * </PRE>
  * <P>The following are planned to be implemented very soon:
  * <PRE>
- * \w	characters in a word (\w+ for a word)
- * \d	numeric digits (\d+ for a number)
+ * \u	unicode character, as in Java.
  * \f	numeric digits plus . e f (\f+ for floating number)
  * </PRE>
  * <P>The following functionality must be added someday:
@@ -82,18 +87,65 @@ public class RE {
 
 	// Since these next few REs are constant, we can use the "flyweight"
 	// Design Pattern for them - we only need one instance of each, ever.
-	// This does NOT extend to multipliers like * + ?
+	// This can NOT, of course, extend to multipliers like * + ?
+	// Some of them are subclassed right here, since we dont need
+	// to make a named class for something as simple as begin-of-line.
 
 	/** The "flyweight" SE for \w */
-	protected static SE myWord = new SEccl("[a-zA-Z_0-9]", new Int(0));
+	protected static SE myWordChars = new SEccl("[a-zA-Z_0-9]", new Int(0));
 	/** The "flyweight" SE for \d */
-	protected static SE myDigits = new SEccl("[0-9]", new Int(0));
+	protected static SE myDigits = new SE() {
+		public boolean amatch(String a, Int i) {
+			boolean match = Character.isDigit(a.charAt(i.get()));
+			if (match) i.incr();
+			return match;
+		}
+		public String toString() {
+			return "\\d";
+		}
+	};
+	/** The "flyweight" SE for \s */
+	protected static SE mySpaces = new SE() {
+		public boolean amatch(String a, Int i) {
+			boolean match = Character.isWhitespace(a.charAt(i.get()));
+			if (match) i.incr();
+			return match;
+		}
+		public String toString() {
+			return "\\s";
+		}
+	};
 	/** The "flyweight" for "." */
-	protected static SE myAny = new SEany();
+	protected static SE myAny = new SE() {
+		public String toString() { return "SE(.)"; }
+		public boolean amatch(String ln, Int i) {
+			if (ln.length() >= i.get())
+				return false;					// end of string
+			i.incr();
+			return true;
+		}
+	};
 	/** The "flyweight" for "^" */
-	protected static SE myBOL = new SEbol();
+	protected static SE myBOL = new SE() {
+		public String toString() { return "BOL"; }
+		public boolean amatch(String ln, Int i) {
+			if (i.get()>0)
+				return false;
+			// no i.incr() since we dont use any chars in ln
+			return true;
+		}
+	};
 	/** The "flyweight" for "$" */
-	protected static SE myEOL = new SEeol();
+	protected static SE myEOL = new SE() {
+		public String toString() { return "EOL"; }
+		public boolean amatch(String ln, Int i) {
+			if (i.get() == ln.length()) {
+				// no i.incr() since we dont use any chars in ln
+				return true;
+			}
+			return false;
+		}
+	};
 
 	/** Construct an RE object, given a pattern.
 	 * @throws RESyntaxException if bad syntax.
@@ -234,8 +286,9 @@ public class RE {
 				SE mult = new SEmult(min, max, (SE)v.elementAt(last));
 				v.setElementAt(mult, last);
 			} else {	 
-				// ALL ELSE IS AN "Ordinary" character.
-				v.addElement(new SEchar(esc(arg, i)));
+				// ALL ELSE IS AN "Ordinary" character, or one of 
+				// the special \-escape characters.
+				v.addElement(esc(arg, i));
 			}
 			lastj = lj;
 			if (!done) i.incr();
@@ -270,7 +323,7 @@ public class RE {
 			}
 			// If matched all elements of patt, we have ignition!
 			if (!failed) {
-				System.out.println("doMatch() all ip at " +il+ "; return true");
+				System.out.println("doMatch() all patt at " +il+ "; return true");
 				return true;
 			}
 		}
@@ -283,17 +336,32 @@ public class RE {
 	 * updates i if so.
 	 * in any case, returns the character.
 	 */
-	protected static char esc(String a, Int i) {
-		if (a.charAt(i.get()) != \\)
-			return a.charAt(i.get());
+	protected static SE esc(String a, Int i) {
+		char c = a.charAt(i.get());
+		if (c != \\)					// non-escaped character.
+			return new SEchar(c);
 		if (i.get() >= a.length())
-			return \\;	/* not special at end */
+			return new SEchar(\\);	/* not special at end */
 		i.incr();
-		if (a.charAt(i.get()) == n)
-			return \n;
-		if (a.charAt(i.get()) == t)
-			return \t;
-		return a.charAt(i.get());
+		c = a.charAt(i.get());
+		switch (c) {
+		case d:
+			return myDigits;
+		case n:
+			return new SEchar(\n);
+		case r:
+			return new SEchar(\r);
+		case s:
+			return mySpaces;
+		case t:
+			return new SEchar(\t);
+		case w:
+			return myWordChars;
+		case \\:
+			return new SEchar(\\);
+		default:
+			return new SEchar(c);
+		}
 	}
 
 //+

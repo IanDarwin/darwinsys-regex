@@ -92,6 +92,16 @@ public class RE {
 
 	/** Match a pattern in a given string. Designed for light-duty
 	 * use, as it compiles the pattern each time.
+	 */
+	public static boolean isMatch(String patt, String str) {
+		if (singleton == null)
+			singleton = new RE("");
+		SE[] thispat = singleton.compile(patt);
+		return singleton.doMatch(thispat, str, false);
+	}
+	
+	/** Match a pattern in a given string. Designed for light-duty
+	 * use, as it compiles the pattern each time.
 	 * For multiples uses of the same pattern, construct an RE object,
 	 * which stores the pattern inside it.
 	 */
@@ -338,7 +348,7 @@ public class RE {
 	/* doMatch -- find pattern match anywhere on line.
 	 * The sacred heart of the matching engine.
 	 */
-	protected boolean doMatch(SE[] patt, String line, boolean ignoreCase) {
+	protected static boolean doMatch(SE[] patt, String line, boolean ignoreCase) {
 		Int	i = new Int();
 		int il;
 		boolean failed = false;

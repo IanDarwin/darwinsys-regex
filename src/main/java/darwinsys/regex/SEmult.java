@@ -38,7 +38,7 @@ public class SEmult extends SE {
 
 	/** Match target at ln[i], multiple times */
 	public boolean amatch(String ln, Int i) {
-		System.out.println("SEmult amatch() called on " + ln.charAt(i.get()));
+		Debug.println("SEmult", "SEmult amatch() called on " + ln.charAt(i.get()));
 		boolean metMin = minimum == 0; // if 0 minimum, already met minimum.
 		for (int j=minimum; j<maximum && i.get()<ln.length(); j++) {
 			if (!target.amatch(ln, i))

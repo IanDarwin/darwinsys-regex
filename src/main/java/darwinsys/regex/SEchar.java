@@ -13,15 +13,15 @@ public class SEchar extends SE {
 	 * @return true iff ln.charAt(i)==the character we were constructed with.
 	 */
 	public boolean amatch(String ln, Int i) {
-		// DBug.println("SEchar", "SEchar.amatch("+ln+','+i.get() + "), want " + val);
+		Debug.println("SEchar", "SEchar.amatch("+ln+','+i.get() + "), want " + val);
 		if (i.get() < ln.length()) {
 			boolean success = (ln.charAt(i.get()) == val);
-			// DBug.println("SEchar", "SEchar.amatch: success="+success);
+			Debug.println("SEchar", "SEchar.amatch: success="+success);
 			if (success)
 				i.incr();
 			return success;
 		} 
-		// DBug.println("SEchar", "SEchar.amatch: hit end of string");
+		Debug.println("SEchar", "SEchar.amatch: hit end of string");
 		return false;					// end of string
 	}
 }

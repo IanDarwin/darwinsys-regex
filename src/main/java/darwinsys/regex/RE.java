@@ -1,27 +1,24 @@
-# This version passes 10 of 12 simple tests, and doesnt throw any exceptions.
-
 import java.util.*;
 
 /**
- * Another attempt at a toy regular expressions package for Java.
+ * A small regular expressions package for Java.
  *
- * This is a very simple implementation, compiling the pattern
- * into an array of SE objects, and interpreting it. As Henry Spencer
+ * This is a pretty simple implementation, compiling the pattern
+ * into an array of SE objects, and interpreting it. 
+ * It is more intended to be pedantic than efficient: as Henry Spencer
  * said of his (much more sophisticated) C-language regexp,
  * replacing the innards of egrep with this code would be a mistake.
  *
  * NOT FINISHED. TODO:
- * Get doMatch() working for all types.
- * Get compile() to do closures (of all 3 types):
-	int last = v.size()-1;
- 	v.replaceElementAt(last, new SEclos(type, (SE)v.elementAt(last));
- * Write SEclos.amatch().
- * Fix all the places that have XXX.
+ * Get doMatch() working 100% for all types.
+ * Pass array of SEs into amatch() for use of Closures, write SEclos.amatch().
+ * NO NO NO -- put the iterations in doMatch, not ses amatch!
  *
- * More Functionality:
+ * TODO: More Functionality:
  * Write versions that return Match(), not just boolean version.
- * Use that to Write sub() functionality.
+ * Use that to write sub() functionality.
  * Add Perl-style REs \w \n etc.
+ * Add alternation and grouping () |
  *
  * @author Ian F. Darwin, ian@darwinsys.com.
  * Based in part on a version I wrote years ago in C as part of a
@@ -35,16 +32,16 @@ import java.util.*;
 public class RE {
 
 	public static final char CLOSURE_ANY = *;
-	public static final char CL_ZERO_OR_ONE = ?;	// XXX
-	public static final char CL_ONE_OR_MORE = +;	// XXX
+	public static final char CLOSURE_ZERO_OR_ONE = ?;
+	public static final char CLOSURE_ONE_OR_MORE = +;
 	public static final char EOL = $;
 	public static final char BOL = ^;
 	public static final char ANY = .;
 	public static final char CCL = [;
 	public static final char CCLEND = ];
-	public static final char OR = |;			// XXX
-	public static final char GRP = (;			// XXX
-	public static final char GRPEND = );		// XXX
+	public static final char OR = |;			// XXX Extended RE
+	public static final char GRP = (;			// XXX Extended RE
+	public static final char GRPEND = );		// XXX Extended RE
 	public static final char WORD = w;		// XXX Perlish
 	public static final char NUMBER = n;		// XXX Perlish
 	public static final char LITCHAR = \\;
@@ -115,7 +112,7 @@ public class RE {
 	//-
 
 	/* compile -- make pattern from arg.
-	 * @return compiled pattern
+	 * @return compiled pattern in an array of SE
 	 * @throws RESyntaxException if bad syntax.
 	 */
 	protected SE[] compile(String arg) throws RESyntaxException {
@@ -138,17 +135,14 @@ public class RE {
 				v.addElement(new SEeol());
 			} else if (c == CCL) {
 				v.addElement(new SEccl(arg, i));
-			// "*" not special unless it follows something
-		//
-		//	} else if (c == CLOSURE_ANY && i.get() > 0) {
-		//		lj = lastj;
-		//		if (patt.charAt(lj) == BOL || patt.charAt(lj) == EOL ||
-		//			patt.charAt(lj) == CLOSURE_ANY)
-		//			break;	/* terminate loop */
-		//		else
-		//			/* replaces stclose: lastj==where orig. pattern began */
-		//			patt.insert(lastj, CLOSURE_ANY);
-		//			++j;
+			// "*" not special unless it follows something;
+			// replace element it follows with CLOSURE referring to it
+			} else if (i.get() > 0 &&
+				(c == CLOSURE_ANY ||
+				 c == CLOSURE_ONE_OR_MORE ||
+				 c == CLOSURE_ZERO_OR_ONE)) {
+				int last = v.size()-1;
+				v.setElementAt(new SEclos(c, (SE)v.elementAt(last)), last);
 			} else {
 				// "Ordinary" character.
 				v.addElement(new SEchar(esc(arg, i)));
@@ -176,8 +170,10 @@ public class RE {
 		// Try patt starting at each char position in line.
 		// i gets incr()d by each amatch() to skip over what it looks at.
 		for (il=0, i.set(il); il<line.length(); il++, i.set(il)) {
+			System.out.println("doMatch: il="+il);
 			failed = false;
 			for (int ip=0; ip<patt.length; ip++) {
+				System.out.println("doMatch: ip="+ip);
 				if (!patt[ip].amatch(line, i)) {
 					failed = true;
 					break;		// out of inner loop
@@ -230,11 +226,8 @@ public class RE {
 				System.out.println("SEchar.amatch: success="+success);
 				i.incr();
 				return success;
-			} else {
-				i.incr();
-				System.out.println("SEchar.amatch: EOS");
-				return false;					// end of string
-			}
+			} 
+			return false;					// end of string
 		}
 	}
 
@@ -324,12 +317,22 @@ public class RE {
 			return val.length() - startLen;
 		}
 
+		/** match CCLs here */
 		public boolean amatch(String ln, Int i) {
-			// match CCLs here
+			if (!negate) {
+				if (i.get()<ln.length() && locate(ln.charAt(i.get())))
+					return true;
+			} else {
+				if (i.get()<ln.length() && !locate(ln.charAt(i.get())))
+					return true;
+			}
+			return false;
+		}
+
+		/* locate -- look for c in character class */
+		protected boolean locate(char c) {
 			for (int k = 0; k<val.length(); k++) {
-				if (ln.length() >= i.get())
-					return false;					// end of string
-				if (ln.charAt(i.get()) == k)
+				if (val.charAt(k) == c)
 					return true;
 			}
 			return false;
@@ -345,7 +348,7 @@ public class RE {
 
 		/** Make me printable */
 		public String toString() {
-			return "SEclos(" + type + "->" + target + ")";
+			return "SEclos(\"" + (char)type + "\" -> " + target + ")";
 		}
 
 		/** Construct a Closure */
@@ -354,8 +357,10 @@ public class RE {
 			target = ta;
 		}
 
+		/** Match a closure */
 		public boolean amatch(String ln, Int i) {
-			throw new IllegalArgumentException("Closure amatch not written!");
+			throw new IllegalArgumentException(
+				"Closure amatch() called directly");
 		}
 	}
 //+

@@ -93,27 +93,29 @@ public class RE {
 	 * @throws RESyntaxException if bad syntax.
 	 */
 	protected static StringBuffer compile(String arg) throws RESyntaxException {
-		int j = 0, lastj = 0, lj = 0;
+		int i = 0,	// arg index
+			j = 0,	// patt "index"
+			lastj = 0, lj = 0;
 		boolean done = false;
 
 		StringBuffer patt = new StringBuffer(arg.length()*2); // guess length
 
-		int i=0;
 		while (!done && i<arg.length()) {
+			char c = arg.charAt(i);
 			lj = j;
-			if (arg.charAt(i) == ANY) {
+			if (c == ANY) {
 				patt.append(ANY);
 			// "^" only special at beginning/
-			} else if (arg.charAt(i) == BOL && i == 0) {
+			} else if (c == BOL && i == 0) {
 				patt.append(BOL);
 			// "$" only special at end */
-			} else if (arg.charAt(i) == EOL && i > 0) {
+			} else if (c == EOL && i > 0) {
 				patt.append(EOL);
-			} else if (arg.charAt(i) == CCL) {
+			} else if (c == CCL) {
 				if (getccl(arg, i, patt) == false)
 					break;
 			// "*" not special unless it follows something
-			} else if (arg.charAt(i) == CLOSURE && i > 0) {
+			} else if (c == CLOSURE && i > 0) {
 				lj = lastj;
 				if (patt.charAt(lj) == BOL || patt.charAt(lj) == EOL ||
 					patt.charAt(lj) == CLOSURE)
@@ -152,11 +154,10 @@ public class RE {
 		} else
 			patt.append(CCL);
 		jstart = patt.length();
-		patt.append(0);	/* room for count */
 		// Expand the range
 		int len = dodash(CCLEND, arg, i, patt);
 		// replace null with count
-		patt.setCharAt(jstart, (char)(len));
+		patt.insert(jstart, (char)(len));
 		return arg.charAt(i) == CCLEND;
 	}
 

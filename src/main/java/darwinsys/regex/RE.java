@@ -80,6 +80,9 @@ public class RE {
 	protected String origPatt;
 
 	//+
+	//-----------------------------------------------------
+	// START OF PUBLIC API FOR REGULAR EXPRESSION PACKAGE.
+	//-----------------------------------------------------
 	/** Construct an RE object, given a pattern.
 	 * @throws RESyntaxException if bad syntax.
 	 */
@@ -88,16 +91,16 @@ public class RE {
 		myPat = compile(patt);
 	}
 
-	protected static RE singleton;
+	protected static RE singleton = new RE("");
 
 	/** Match a pattern in a given string. Designed for light-duty
 	 * use, as it compiles the pattern each time.
 	 */
 	public static boolean isMatch(String patt, String str) {
-		if (singleton == null)
-			singleton = new RE("");
-		SE[] thispat = singleton.compile(patt);
-		return singleton.doMatch(thispat, str, false);
+		synchronized(singleton) {
+			SE[] thispat = singleton.compile(patt);
+			return singleton.doMatch(thispat, str, false);
+		}
 	}
 	
 	/** Match a pattern in a given string. Designed for light-duty
@@ -106,10 +109,10 @@ public class RE {
 	 * which stores the pattern inside it.
 	 */
 	public static Match match(String patt, String str){
-		if (singleton == null)
-			singleton = new RE("");
-		SE[] thispat = singleton.compile(patt);
-		return singleton.getMatch(thispat, str, false);
+		synchronized(singleton) {
+			SE[] thispat = singleton.compile(patt);
+			return singleton.getMatch(thispat, str, false);
+		}
 	}
 
 	/** Match the compiled pattern stored in the RE in a given String.
@@ -142,6 +145,19 @@ public class RE {
 	 	return getMatch(myPat, str, ignoreCase);
 	}
 
+	/** Substitute, in the unix editor sense. */
+	public static String sub(String patt, String inString, String RHS) {
+		synchronized(singleton) {
+			SE[] thispat = singleton.compile(patt);
+			return singleton.doSubst(thispat, inString, RHS);
+		}
+	}
+		
+	/** Substitute, in the unix editor sense. */
+	public String sub(String inString, String RHS) {
+		return doSubst(myPat, inString, RHS);
+	}
+		
 	//-----------------------------------------------------------------
 	// END OF PUBLIC PART OF API -- remainder omitted in some listings.
 	//-----------------------------------------------------------------
@@ -429,6 +445,27 @@ public class RE {
 		}
 	}
 
+	/** SUBSTITUTE */
+	public static String doSubst(SE[] myPat, String inString, String RHS) {
+		// See if the RE matches anywhere in the input String
+		Match whence = getMatch(myPat, inString, false);
+		// System.out.println("match() returned \"" + whence + "\"");
+
+		// If RE not found, string is returned untouched
+		if (whence == null)
+			return inString;
+
+		// Still here, so do substitution.
+
+		// First version: ignore metacharacters like & in RHS
+		// The new string is: up to the match, the RHS, and after the match.
+		StringBuffer sb = new StringBuffer();
+		if (whence.start>0)
+			sb.append(inString.substring(0,whence.start));
+		sb.append(RHS);
+		sb.append(inString.substring(whence.end));
+		return sb.toString();
+	}
 //+
 }
 //-

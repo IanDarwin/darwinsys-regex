@@ -17,76 +17,122 @@
  * @version $Id$
  */
 
+//+
 public class RE {
 
-	final char CLOSURE = *;
-	final char EOL = $;
-	final char BOL = ^;
-	final char ANY = ?;
-	final char CCL = [;
-	final char LITCHAR = \\;
-	final char NEGATE = !;
-	final char NCCL = x;
+	public static final char CLOSURE = *;
+	public static final char EOL = $;
+	public static final char BOL = ^;
+	public static final char ANY = .;
+	public static final char CCL = [;
+	public static final char LITCHAR = \\;
+	public static final char NEGATE = !;
+	public static final char NCCL = x;
 	final char CCLEND = ];
 	final int CLOSIZE = 1;	/* TODO: check against the book */
 	final char DASH = -;
 	final int ERR = -1;
 
-	/* make pat -- make pattern from arg[i], stop at delim */
+	protected StringBuffer mypat;
 
-	/* return ERR or index of closing delimiter */
-	int
-	makepat(String arg, int start, char delim, StringBuffer patt) {
-		int	i = start, j = 0, lastj = 0, lj = 0;
+	/** Construct an RE object, given a pattern.
+	 * @throws RESyntaxException if bad syntax.
+	 */
+	public RE(String patt) throws RESyntaxException {
+		mypat = compile(patt);
+	}
+
+	/** Match a pattern in a given string. Designed for light-duty
+	 * use, as it compiles the pattern each time.
+	 * For frequent use, construct an RE object, which stores
+	 * the pattern inside it.
+	 */
+	public static Match match(String patt, String str){
+		StringBuffer thispat = compile(patt);
+		return match(thispat, str);
+	}
+
+	/** Match the compiled pattern stored in the RE in a given String.
+	 * @return True if the RE matches anyplace in the String.
+	 */
+	public boolean isMatch(String str){ /*XXX*/ return false; }
+
+	/** Match the compiled pattern stored in the RE in a given String.
+	 * @return A Match object indicating the position & length of the match
+	 */
+	public Match match(String str){ /*XXX*/ return null; }
+
+	/** Match all occurrences of the compiled pattern stored in the 
+	 * RE against the given String.
+	 * @return Array of Match objects, each indicating the position & 
+	 * length of the match.
+	 */
+	public Match[] matches(String str){ /*XXX*/ return null; }
+
+	///////////////////////////////////////////////////////////////
+	// END OF PUBLIC PART OF API -- remainder omitted in some listings.
+	///////////////////////////////////////////////////////////////
+	//-
+
+	/* compile -- make pattern from arg.
+	 * @return compiled pattern
+	 * @throws RESyntaxException if bad syntax.
+	 */
+	protected static StringBuffer compile(String arg) throws RESyntaxException {
+		int lastj = 0, lj = 0;
 		boolean done = false;
 
-		while (!done && arg.charAt(i) != \0 && arg.charAt(i) != delim) {
-			lj = j;
+		StringBuffer patt = new StringBuffer(arg.length()*2); // guess length
+
+		for (int i=0, j=0; i<arg.length; i++) {
 			if (arg.charAt(i) == ANY)
-				patt.insert(j, ANY);
-			else if (arg.charAt(i) == BOL && i == start)
-				patt.insert(j, BOL);
-			else if (arg.charAt(i) == EOL && arg.charAt(i+1) == delim)
-				patt.insert(j, EOL);
+				patt.append(ANY);
+			// "^" only special at beginning/
+			else if (arg.charAt(i) == BOL && i == 0)
+				patt.append(BOL);
+			// "$" only special at end */
+			else if (arg.charAt(i) == EOL && i==arg.length-1)
+				patt.append(EOL);
 			else if (arg.charAt(i) == CCL)
-				done = getccl(arg, i, patt, j) == false;
-			else if (arg.charAt(i) == CLOSURE && i > start) {
+				if (getccl(arg, i, patt) == false)
+					break;
+			// "*" not special unless it follows something
+			else if (arg.charAt(i) == CLOSURE && i > 0) {
 				lj = lastj;
 				if (patt.charAt(lj) == BOL || patt.charAt(lj) == EOL ||
 					patt.charAt(lj) == CLOSURE)
-					done = true;	/* terminate loop */
+					break;	/* terminate loop */
 				else
 					stclose(patt, j, lastj);
 			} else {
-				patt.insert(j, LITCHAR);
-				patt.insert(j, esc(arg, i));
+				patt.append(LITCHAR);
+				patt.append(esc(arg, i));
 			}
 			lastj = lj;
-			if (!done)
-				++i;
 		}
 		if (done || arg[i] != delim) {		/* finished early */
-			System.err.println("incomplete pattern");
-			return ERR;
+			throw new RESyntaxException("incomplete pattern");
 		} else
-			return i;
+			return patt;
 	}
 
 	/** getccl -- expand char class at arg[i] into pat[j].
 	 * @return true if pattern OK, false if a problem.
 	 */
-	protected boolean getccl(String arg, int i, StringBuffer patt, int j) {
+	protected boolean getccl(String arg, int i, StringBuffer patt) {
 		int jstart;
 
 		++i;			/* skip over [ */
 		if (arg.charAt(i) == NEGATE) {
-			patt.insert(j, NCCL);
+			patt.append(NCCL);
 			++i;
 		} else
-			patt.insert(j, CCL);
-		jstart = j;
-		patt.insert(j, 0);	/* room for count */
-		dodash(CCLEND, arg, i, patt, j);
+			patt.append(CCL);
+		jstart = patt.length();
+		patt.append(j, 0);	/* room for count */
+		// Expand the range
+		dodash(CCLEND, arg, i, patt);
+		// replace null with count
 		patt.setCharAt(jstart, (char)(j - jstart - 1));
 		return arg.charAt(i) == CCLEND;
 	}
@@ -105,31 +151,32 @@ public class RE {
 	}
 
 	/* dodash - expand dash shorthand set at scr[i] into dest[j], stop at dlm */
-	protected void dodash(char dlm, String src, int i, StringBuffer dest, int j) {
+	protected void dodash(char dlm, String src, int i, StringBuffer dest) {
 		int k;
 
 		while (src.charAt(i) != dlm && src[i] != \0) {
 			if (src.charAt(i) == ESCAPE)
-				dest.insert(j, esc(src, i));
+				dest.append(esc(src, i));
 			else if (src.charAt(i) != DASH)
-				dest.insert(j, src.charAt(i));
-			else if (j <= 0 || src.charAt(i+1) == \0)
-				dest.insert(j, DASH);	/* literal - */
+				dest.append(src.charAt(i));
+			else if (dest.length == 0 || src.length() == i+1)
+				dest.append(DASH);	/* literal - */
+			/* XXX 
 			else if (isalnum(src[i-1]) && isalnum(src.charAt(i+1)) &&
 				src.charAt(i-1) <= src.charAt(i+1)) {
 				for (k = src.charAt(i-1)+1; k <= src.charAt(i+1); k++)
-					dest.insert(j, k);
+					dest.append(k);
 				++i;
-			} else
-				dest.insert(j, DASH);
+			}
+			XXX */
+			else
+				dest.append(DASH);
 			++i;
 		}
 	}
 
-	/* match -- actual matching routines: match amatch omatch */
-
 	/* match -- find pattern match anywhere on line */
-	boolean match(String line, String patt)
+	protected boolean match(String line, StringBuffer patt)
 	{
 		int	i = 0, j = 0;
 
@@ -273,4 +320,6 @@ public class RE {
 			return \t;
 		return a.charAt(i);
 	}
+//+
 }
+//-

@@ -94,7 +94,7 @@ public class RE {
 		myPat = compile(patt);
 	}
 
-	protected final static RE singleton;
+	private static RE singleton;
 
 	static {
  		try {

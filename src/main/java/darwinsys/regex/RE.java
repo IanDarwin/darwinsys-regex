@@ -32,15 +32,7 @@ import java.util.*;
  * \\d	numeric digit (\d+ for a number)
  * \\s	white space
  * </PRE>
- * <P>The following are planned to be implemented very soon:
- * <BR>-- Versions that return Match(), not just boolean version.
- * <BR>-- Use that version of Match to write sub() functionality.
- * <BR>\\u	unicode character, as in Java.
- * <P>The following functionality must be added someday:
- * <BR>-- Alternation and grouping () |
- * <P>The following are possible later.
- * <BR>\\f	numeric digits plus . e f (\f+ for floating number)
- * </P>
+ *
  * @see	bugs.html - the bug list and TODO file.
  * @author Ian F. Darwin, ian@darwinsys.com.
  * Based in part on a version I wrote years ago in C as part of a
@@ -403,6 +395,11 @@ public class RE {
 			return myNOTSpaces;
 		case TAB:
 			return new SEchar(\t);
+		case u:
+			// assume followed by 4-digit hex string for Unicode character.
+			String hex = a.substring(i.get()+1, i.get()+5);
+			i.incr(4);
+			return new SEchar((char)Integer.parseInt(hex, 16)); 
 		case WORDCHAR:
 			return myWordChars;
 		case W:

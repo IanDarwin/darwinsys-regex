@@ -1,3 +1,5 @@
+package com.darwinsys.regexp;
+
 /** SEccl represents one Character Class, or list of characters
  * inside square brackets.  Construct with a list; the constructor
  * will expand dashes if possible, so that new SEccl("[a-e]") will

@@ -1,3 +1,5 @@
+package com.darwinsys.regexp;
+
 /** SEor represents an "or" condition, as in verdi|wagner
  * @author Ian Darwin, ian@darwinsys.com
  * $Id$

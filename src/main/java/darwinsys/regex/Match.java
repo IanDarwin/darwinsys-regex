@@ -1,3 +1,5 @@
+package com.darwinsys.regexp;
+
 /** A Match describes one position at which a RE matches a String.
  * Note that all constructors are protected, since this class is only
  * meant to be constructed by the RE package itself.

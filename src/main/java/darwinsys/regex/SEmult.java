@@ -1,3 +1,5 @@
+package com.darwinsys.regexp;
+
 /** SEmult represents one multiplier (aka "Closure", "quantifier", repetition).
  * The four forms in the RE input, * ? + and {m,n}, are all
  * represented by an instance of this class, with the

@@ -1,3 +1,5 @@
+package com.darwinsys.regexp;
+
 /* SEchar - represent one ordinary character.
  * @author Ian Darwin, ian@darwinsys.com
  * $Id$

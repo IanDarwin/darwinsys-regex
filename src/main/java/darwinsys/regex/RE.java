@@ -1,3 +1,5 @@
+package com.darwinsys.regexp;
+
 import java.util.*;
 
 /**
@@ -7,7 +9,7 @@ import java.util.*;
  * into an array of sub-expression (SE) objects, and interpreting it. 
  * It is more intended to be pedantic than efficient: as Henry Spencer
  * said of his (much more sophisticated) C-language regexp,
- * replacing the innards of egrep with this code would be a mistake.
+ * "replacing the innards of egrep with this code would be a mistake".
  * <P>
  * The subset of regular expression characters 
  * that this API accepts is as follows. Consult the O'Reilly book 
@@ -91,12 +93,21 @@ public class RE {
 		myPat = compile(patt);
 	}
 
-	protected static RE singleton = new RE("");
+	protected final static RE singleton;
+
+	static {
+ 		try {
+			singleton = new RE("");
+		} catch (RESyntaxException e) {
+			System.err.println(
+			"Impossible error: singleton=new RE(\"\") threw an exception");
+		}
+	}
 
 	/** Match a pattern in a given string. Designed for light-duty
 	 * use, as it compiles the pattern each time.
 	 */
-	public static boolean isMatch(String patt, String str) {
+	public static boolean match(String patt, String str) throws RESyntaxException {
 		synchronized(singleton) {
 			SE[] thispat = singleton.compile(patt);
 			return singleton.doMatch(thispat, str, false);
@@ -108,7 +119,7 @@ public class RE {
 	 * For multiple uses of the same pattern, construct an RE object,
 	 * which stores the pattern inside it.
 	 */
-	public static Match match(String patt, String str){
+	public static Match getMatch(String patt, String str){
 		synchronized(singleton) {
 			SE[] thispat = singleton.compile(patt);
 			return singleton.getMatch(thispat, str, false);
@@ -118,7 +129,7 @@ public class RE {
 	/** Match the compiled pattern stored in the RE in a given String.
 	 * @return True if the RE matches anyplace in the String.
 	 */
-	public boolean isMatch(String str){
+	public boolean match(String str){
 		return doMatch(myPat, str, false);
 	}
 
@@ -128,7 +139,7 @@ public class RE {
 	 * param ignoreCase -- true if case is to be ignored.
 	 * @return True if the RE matches anyplace in the String.
 	 */
-	public boolean isMatch(String str, boolean ignoreCase){
+	public boolean match(String str, boolean ignoreCase){
 		return doMatch(myPat, str, ignoreCase);
 	}
 
@@ -136,12 +147,12 @@ public class RE {
 	 * @return A Match object indicating the position & length of the match.
 	 * Null if no match.
 	 */
-	public Match match(String str){ return match(str, false); }
+	public Match getMatch(String str){ return match(str, false); }
 
 	/** Match the compiled pattern in this RE against a given string,
 	 * with control over case sensitivity.
 	 */
-	public Match match(String str, boolean ignoreCase) {
+	public Match getMatch(String str, boolean ignoreCase) {
 	 	return getMatch(myPat, str, ignoreCase);
 	}
 

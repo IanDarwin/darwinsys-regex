@@ -9,7 +9,9 @@
 <H1>Regular Expressions API: Implementation Bugs and TODO</H1>
 <H2>Caveats</H2>
 <P>The current implementation is <EM>very</EM> slow.
-Perhaps it should have been in native code.</P>
+The Apache Jakarta regexp is several times faster, partly because
+it compiles to (its own) byte code.
+</P>
 <H2>Bugs</H2>
 <P>The following bugs are present in this version:
 	<BR>a .* followed by something may eat up the something; need to implement backtracking!

@@ -1,3 +1,5 @@
+package com.darwinsys.regexp;
+
 /** Represent one sub-expression in an RE.
  * @author Ian Darwin, ian@darwinsys.com
  * $Id$

@@ -1,11 +1,11 @@
-/** SErep represents one "Closure" or repetition.
+/** SEmult represents one "Closure" or repetition.
  * The four forms in the RE input, * ? + and {m,n}, are all
  * represented by an instance of this class, with the
  * minimum and maximum number set appropriately.
  * @author Ian Darwin, ian@darwinsys.com
  * $Id$
  */
-public class SErep extends SE {
+public class SEmult extends SE {
 	/** The constant meaning no upper bound. */
 	public final static int NOMAX = Integer.MAX_VALUE;
 	/** The minimum number of times that must match */
@@ -17,7 +17,7 @@ public class SErep extends SE {
 
 	/** Make me printable */
 	public String toString() {
-		StringBuffer sb = new StringBuffer("SErep(").append(target).append('{').append(minimum).append(',');
+		StringBuffer sb = new StringBuffer("SEmult(").append(target).append('{').append(minimum).append(',');
 		if (maximum==NOMAX)
 			sb.append('*');
 		else
@@ -27,7 +27,7 @@ public class SErep extends SE {
 	}
 
 	/** Construct a Closure */
-	public SErep(int min, int max, SE ta) {
+	public SEmult(int min, int max, SE ta) {
 		if (minimum < 0)
 			throw new IllegalArgumentException(
 				"Minimum must be non-negative");

@@ -32,8 +32,8 @@ import java.util.*;
  * NOT FINISHED. TODO:
  * Get doMatch() working 100% for all types.
  * esc() must return an SE so it can do \w \s \d as well as \n \t \b etc.
- * Pass array of SEs into amatch() for use of Closures, write SErep.amatch().
- * NO NO NO -- put the iterations in doMatch, not ses amatch!
+ * Beware: there are two different uses of esc().
+ * Add iterations in doMatch for multipliers (SEmults). 
  * <P>
  * TODO: More Functionality:
  * Write versions that return Match(), not just boolean version.
@@ -52,11 +52,11 @@ import java.util.*;
 //+
 public class RE {
 
-	public static final char CLOSURE_ANY = *;
-	public static final char CLOSURE_ZERO_OR_ONE = ?;
-	public static final char CLOSURE_ONE_OR_MORE = +;
-	public static final char CLOSURE_NUMERIC = {;	// XXX
-	public static final char CLOSURE_NUMERIC_END = };	// XXX
+	public static final char MULT_ANY = *;
+	public static final char MULT_ZERO_OR_ONE = ?;
+	public static final char MULT_ONE_OR_MORE = +;
+	public static final char MULT_NUMERIC = {;	// XXX
+	public static final char MULT_NUMERIC_END = };	// XXX
 
 	public static final char EOL = $;
 	public static final char BOL = ^;
@@ -91,7 +91,7 @@ public class RE {
 	/** The "flyweight" SE for \d */
 	protected static SE myDigits = new SEccl("[0-9]", new Int(0));
 	/** The "flyweight" for "." */
-	protected static SE myANY = new SEany();
+	protected static SE myAny = new SEany();
 	/** The "flyweight" for "^" */
 	protected static SE myBOL = new SEbol();
 	/** The "flyweight" for "$" */
@@ -201,23 +201,23 @@ public class RE {
 				v.addElement(myAny);
 			// "^" only special at beginning.
 			} else if (c == BOL && i.get() == 0) {
-				v.addElement(new myBOL);
+				v.addElement(myBOL);
 			// "$" only special at end.
 			} else if (c == EOL && i.get() == arg.length()-1) {
 				v.addElement(myEOL);
 			} else if (c == CCL) {
 				v.addElement(new SEccl(arg, i));
-			// closures (*,+,?,{,} not special unless they follow something.
-			// replace element it follows with CLOSURE referring to it
-			} else if (i.get() > 0 && c == CLOSURE_ANY) {	// * = {0,}
+			// multipliers (*,+,?,{,} not special unless they follow something.
+			// replace element it follows with MULT referring to it
+			} else if (i.get() > 0 && c == MULT_ANY) {	// * = {0,}
 				int last = v.size()-1;
-				v.setElementAt(new SErep(0, SErep.NOMAX, (SE)v.elementAt(last)), last);
-			} else if (i.get() > 0 && c == CLOSURE_ONE_OR_MORE) { // + -> {1,}
+				v.setElementAt(new SEmult(0, SEmult.NOMAX, (SE)v.elementAt(last)), last);
+			} else if (i.get() > 0 && c == MULT_ONE_OR_MORE) { // + -> {1,}
 				int last = v.size()-1;
-				v.setElementAt(new SErep(1, SErep.NOMAX, (SE)v.elementAt(last)), last);
-			} else if (i.get() > 0 && c == CLOSURE_ZERO_OR_ONE) { // ? -> {0,1}
+				v.setElementAt(new SEmult(1, SEmult.NOMAX, (SE)v.elementAt(last)), last);
+			} else if (i.get() > 0 && c == MULT_ZERO_OR_ONE) { // ? -> {0,1}
 				int last = v.size()-1;
-				v.setElementAt(new SErep(0, 1, (SE)v.elementAt(last)), last);
+				v.setElementAt(new SEmult(0, 1, (SE)v.elementAt(last)), last);
 			} else {
 				// "Ordinary" character.
 				v.addElement(new SEchar(esc(arg, i)));

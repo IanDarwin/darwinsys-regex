@@ -1,27 +1,29 @@
-/** Another attempt at a toy regular expressions package for Java.
+/**
+ * Another attempt at a toy regular expressions package for Java.
  *
  * This is a very simple implementation, compiling the pattern
  * into a StringBuffer, and interpreting it. As Henry Spencer
  * said of his (much more sophisticated) C-language regexp,
  * replacing the innards of egrep with this code would be a mistake.
  *
- * NOWHERE NEAR WORKING -- need to finish converting from C,
+ * NOT YET WORKING -- need to finish converting from C,
  * especially the places where an int is computed & should be returned
- * but a boolean is the actual return type.
- * Also need to use patt.setLength() to discard extra chars a few places.
+ * but a boolean is the actual return type. Also several charAt(i)==\0!
  *
  * @author Ian F. Darwin, ian@darwinsys.com.
  * Patterned after a version I wrote years ago in C as part of a
  * text editor implementation, in turn based on Kernighan & Plaughers
  * <I>Software Tools In Pascal</I> implementation.
+ *
  * @version $Id$
  */
 
 //+
 public class RE {
 
-	public static final char CLOSURE = *;
-	public static final char ZERO_OR_ONE = ?;	// XXX
+	public static final char CLOSURE_ANY = *;
+	public static final char CL_ZERO_OR_ONE = ?;	// XXX
+	public static final char CL_ONE_OR_MORE = +;	// XXX
 	public static final char EOL = $;
 	public static final char BOL = ^;
 	public static final char ANY = .;
@@ -30,8 +32,9 @@ public class RE {
 	public static final char OR = |;			// XXX
 	public static final char GRP = (;			// XXX
 	public static final char GRPEND = );		// XXX
+	public static final char WORD = w;
 	public static final char LITCHAR = \\;
-	public static final char NEGATE = !;
+	public static final char NEGATE = ^;
 	public static final char NCCL = x;
 	protected static final int CLOSIZE = 1;
 	public static final char DASH = -;
@@ -93,36 +96,36 @@ public class RE {
 	 * @throws RESyntaxException if bad syntax.
 	 */
 	protected static StringBuffer compile(String arg) throws RESyntaxException {
-		int i = 0,	// arg index
-			j = 0,	// patt "index"
+		Int i = new Int();		// arg index, initially 0
+		int j = 0,	// patt "index"
 			lastj = 0, lj = 0;
 		boolean done = false;
 
 		StringBuffer patt = new StringBuffer(arg.length()*2); // guess length
 
-		while (!done && i<arg.length()) {
-			char c = arg.charAt(i);
+		while (!done && i.get()<arg.length()) {
+			char c = arg.charAt(i.get());
 			lj = j;
 			if (c == ANY) {
 				patt.append(ANY);
 			// "^" only special at beginning/
-			} else if (c == BOL && i == 0) {
+			} else if (c == BOL && i.get() == 0) {
 				patt.append(BOL);
 			// "$" only special at end */
-			} else if (c == EOL && i > 0) {
+			} else if (c == EOL && i.get() > 0) {
 				patt.append(EOL);
 			} else if (c == CCL) {
-				if (getccl(arg, i, patt) == false)
+				if (getCCL(arg, i, patt) == false)
 					break;
 			// "*" not special unless it follows something
-			} else if (c == CLOSURE && i > 0) {
+			} else if (c == CLOSURE_ANY && i.get() > 0) {
 				lj = lastj;
 				if (patt.charAt(lj) == BOL || patt.charAt(lj) == EOL ||
-					patt.charAt(lj) == CLOSURE)
+					patt.charAt(lj) == CLOSURE_ANY)
 					break;	/* terminate loop */
 				else
 					/* replaces stclose: lastj==where orig. pattern began */
-					patt.insert(lastj, CLOSURE);
+					patt.insert(lastj, CLOSURE_ANY);
 					++j;
 			} else {
 				// "Ordinary" char, but must be LITCHARd so we dont
@@ -131,7 +134,7 @@ public class RE {
 				patt.append(esc(arg, i));	++j;	// XXX patsize?
 			}
 			lastj = lj;
-			if (!done) ++i;
+			if (!done) i.incr();
 		} 
 		if (done) {				/* finished early */
 			throw new RESyntaxException("incomplete pattern");
@@ -139,54 +142,53 @@ public class RE {
 			return patt;
 	}
 
-	/** getccl -- expand char class at arg[i] into pat[j].
+	/** getCCL -- expand char class at arg[i] into pat[j].
 	 * @return true if pattern OK, false if a problem.
 	 */
-	protected static boolean getccl(String arg, int i, StringBuffer patt) {
+	protected static boolean getCCL(String arg, Int i, StringBuffer patt) {
 		int jstart;
 
-		++i;			/* skip over [ */
-		if (i>=arg.length())
+		i.incr();			/* skip over [ */
+		if (i.get()>=arg.length())
 			return false;
-		if (arg.charAt(i) == NEGATE) {
+		if (arg.charAt(i.get()) == NEGATE) {
 			patt.append(NCCL);
-			++i;
+			i.incr();
 		} else
 			patt.append(CCL);
 		jstart = patt.length();
 		// Expand the range
-		int len = dodash(CCLEND, arg, i, patt);
-		// replace null with count
+		int len = doDash(CCLEND, arg, i, patt);
+		// store the length before it: cast int to 16-bit char.
 		patt.insert(jstart, (char)(len));
-		return arg.charAt(i) == CCLEND;
+		return arg.charAt(i.get()) == CCLEND;
 	}
 
-
-	/* dodash - expand dash shorthand set at scr[i] into dest[j] */
-	protected static int dodash(
-		char dlm, String src, int i, StringBuffer dest) {
+	/* doDash - expand dash shorthand set at src[i] to end of dest.
+	 * @return number of characters appended to dest.
+	 */
+	protected static int doDash(
+		char dlm, String src, Int i, StringBuffer dest) {
 
 		int startLen = dest.length();
 
-		while (src.charAt(i) != dlm && i<src.length()) {
-			if (src.charAt(i) == LITCHAR)
+		while (src.charAt(i.get()) != dlm && i.get()<src.length()) {
+			if (src.charAt(i.get()) == LITCHAR)
 				dest.append(esc(src, i));
-			else if (src.charAt(i) != DASH)
-				dest.append(src.charAt(i));
-			else if (dest.length() == 0 || src.length() == i+1)
+			else if (src.charAt(i.get()) != DASH)
+				dest.append(src.charAt(i.get()));
+			else if (dest.length() == 0 || src.length() == i.get()+1)
 				dest.append(DASH);	/* literal - */
-			/* XXX 
-			else if (isalnum(src.charAt(i-1)) && 
-				isalnum(src.charAt(i+1)) &&
-				src.charAt(i-1) <= src.charAt(i+1)) {
-				for (int k = src.charAt(i-1)+1; k <= src.charAt(i+1); k++)
+			else if (Character.isLetterOrDigit(src.charAt(i.get()-1)) && 
+				Character.isLetterOrDigit(src.charAt(i.get()+1)) &&
+				src.charAt(i.get()-1) <= src.charAt(i.get()+1)) {
+				for (int k = src.charAt(i.get()-1)+1; k <= src.charAt(i.get()+1); k++)
 					dest.append(k);
-				++i;
+				i.incr();
 			}
-			XXX */
 			else
 				dest.append(DASH);
-			++i;
+			i.incr();
 		}
 		return dest.length() - startLen;
 	}
@@ -204,15 +206,16 @@ public class RE {
 
 	/* amatch - look for match of patt[j]... at lin[offset]... */
 	int amatch(String line, int offset, StringBuffer patt, int j) {
-		int i, k = 0;
+		Int i = new Int(offset);
+		int k = 0;
 		boolean done = false;
 
 		while (!done && j<patt.length())
-			if (patt.charAt(j) == CLOSURE) {
-				j += patsize(patt, j);	/* step over CLOSURE */
-				i = offset;
+			if (patt.charAt(j) == CLOSURE_ANY) {
+				j += CLOSIZE;
+				i.set(offset);
 				/* match as many as possible */
-				while (!done && i<line.length())
+				while (!done && i.get()<line.length())
 					if (omatch(line, i, patt, j) != true)
 						done = true;
 				/*
@@ -221,17 +224,18 @@ public class RE {
 				 * shrink closure by 1 after each failure.
 				 */
 				done = false;
-				while (!done && i >= offset) {
-					k = amatch(line, i, patt, j+patsize(patt, j));
+				while (!done && i.get() >= offset) {
+					k = amatch(line, i.get(), patt, j+patsize(patt, j)); // recurse
 					if (k > 0)	/* matched rest of pattern */
 						done = true;
 					else
-						--i;
+						i.decr();
 				}
 				offset = k;	/* if k=0 failure, else success */
 				done = true;
 			}
-			else if (omatch(line, offset, patt, j) != true) {
+			// XXX should i.get be i, and change the header?
+			else if (omatch(line, i, patt, j) != true) {
 				offset = 0;	/* non-closure */
 				done = true;
 			}
@@ -252,7 +256,7 @@ public class RE {
 		case CCL:
 		case NCCL:
 			return patt.charAt(n+1) + 2;
-		case CLOSURE:
+		case CLOSURE_ANY:
 			return CLOSIZE;
 		default:
 			System.err.println("in patsize: invalid case, cant happen");
@@ -261,34 +265,35 @@ public class RE {
 	}
 
 	/* omatch -- match one pattern element at patt[j], return boolean */
-	protected boolean omatch(String line, int i, StringBuffer patt, int j) {
+	protected boolean omatch(String line, Int i, StringBuffer patt, int j) {
 		int advance = -1;
 
-		if (line.length() == i+1)
+		if (line.length() == i.get()+1)
 			return false;
 		else
 			switch(patt.charAt(j)) {
 			case LITCHAR:
-				if (line.charAt(i) == patt.charAt(j+1))
+System.out.println("i="+i+", j=" + j);
+				if (line.charAt(i.get()) == patt.charAt(j+1))
 					advance = 1;
 				break;
 			case BOL:
-				if (i == 0)
+				if (i.get() == 0)
 					advance = 0;
 			case ANY:
-				if (line.charAt(i) != \0)
+				if (line.charAt(i.get()) != \0)	// XXX
 					advance = 1;
 				break;
 			case EOL:
-				if (line.charAt(i) == \0)
+				if (line.charAt(i.get()) == \0)	// XXX
 					advance = 0;
 				break;
 			case CCL:
-				if (locate(line.charAt(i), patt, j+1))
+				if (locate(line.charAt(i.get()), patt, j+1))
 					advance = 1;
 				break;
 			case NCCL:
-				if (line.charAt(i) != \0 && !locate(line.charAt(i), patt, j+1))
+				if (line.charAt(i.get()) != \0 && !locate(line.charAt(i.get()), patt, j+1))
 					advance = 1;
 				break;
 			default:
@@ -296,7 +301,7 @@ public class RE {
 				return false;
 			}
 		if (advance >= 0) {
-			i += advance;
+			i.incr(advance);
 			return true;
 		} else
 			return false;
@@ -323,17 +328,17 @@ public class RE {
 	 * updates i if so.
 	 * in any case, returns the character.
 	 */
-	protected static char esc(String a, int i) {
-		if (a.charAt(i) != \\)
-			return a.charAt(i);
-		if (a.charAt(i+1) == \0)
+	protected static char esc(String a, Int i) {
+		if (a.charAt(i.get()) != \\)
+			return a.charAt(i.get());
+		if (a.charAt(i.get()+1) == \0)
 			return \\;	/* not special at end */
-		i++;
-		if (a.charAt(i) == n)
+		i.incr();
+		if (a.charAt(i.get()) == n)
 			return \n;
-		if (a.charAt(i) == t)
+		if (a.charAt(i.get()) == t)
 			return \t;
-		return a.charAt(i);
+		return a.charAt(i.get());
 	}
 //+
 }

@@ -10,7 +10,9 @@ import java.util.*;
  *
  * NOT FINISHED. TODO:
  * Get doMatch() working for all types.
- * Get compile() to do closures (of all 3 types).
+ * Get compile() to do closures (of all 3 types):
+	int last = v.size()-1;
+ 	v.replaceElementAt(last, new SEclos(type, (SE)v.elementAt(last));
  * Write SEclos.amatch().
  * Fix all the places that have XXX.
  *
@@ -164,10 +166,12 @@ public class RE {
 	 * The true inner heart of the matching engine.
 	 */
 	protected boolean doMatch(SE[] patt, String line) {
-		Int	i = new Int(0);
+		Int	i = new Int();
 		boolean done = false;
 
-		for (int il=0; il<line.length(); il++) {
+		// Try patt starting at each char position in line.
+		// i gets incremented by each amatch() to skip over what it looks at.
+		for (int il=0; il<line.length(); i.set(++il)) {
 			for (int ip=0; ip<patt.length; ip++) {
 				if (!patt[ip].amatch(line, i)) {
 					done = true;
@@ -178,22 +182,6 @@ public class RE {
 		return !done;
 	}
 
-	/* locate -- look for c in character class at patt[offset] */
-	protected boolean locate(char c, StringBuffer patt, int offset) {
-		int i;
-		boolean status = false;
-
-		/* size of class is at patt[offset], characters follow*/
-		i = offset + patt.charAt(offset);	/* last position */
-		while (i > offset)
-			if (c == patt.charAt(i)) {
-				status = true;
-				i = offset; /* force loop termination - should break? */
-			}
-			else
-				--i;
-		return status;
-	}
 	/* esc - handle C-like escapes
 	 * if a[i] is \, following char may be special.
 	 * updates i if so.
@@ -225,17 +213,24 @@ public class RE {
 
 		public SEchar(char ch) { val = ch; }
 
-		public String toString() { return "SEchar(" + val + ); }
+		public String toString() { return "SE(" + val + ); }
 
 		public boolean amatch(String ln, Int i) {
-			if (ln.length() >= i.get())
+			System.out.println("SEchar.amatch("+ln+,+i.get() + ));
+			if (ln.length() >= i.get()) {
+				i.incr();
+				System.out.println("SEchar.amatch: EOS");
 				return false;					// end of string
+			}
+			boolean success = (ln.charAt(i.get()) == val);
+			System.out.println("SEchar.amatch: success="+success);
 			i.incr();
-			return ln.charAt(i.get()) == val;
+			return success;
 		}
 	}
 
 	class SEany extends SE {
+		public String toString() { return "SE(.)"; }
 		public boolean amatch(String ln, Int i) {
 			if (ln.length() >= i.get())
 				return false;					// end of string
@@ -245,6 +240,7 @@ public class RE {
 	}
 
 	class SEbol extends SE {
+		public String toString() { return "SE(^)"; }
 		public boolean amatch(String ln, Int i) {
 			if (i.get()>0)
 				return false;
@@ -254,6 +250,7 @@ public class RE {
 	}
 
 	class SEeol extends SE {
+		public String toString() { return "SE($)"; }
 		public boolean amatch(String ln, Int i) {
 			if (i.get() == ln.length() - 1) {
 				// no i.incr() since we dont use any chars in ln

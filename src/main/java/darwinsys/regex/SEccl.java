@@ -59,11 +59,15 @@ public class SEccl extends SE {
 	/** match CCLs here */
 	public boolean amatch(String ln, Int i) {
 		if (!negate) {
-			if (i.get()<ln.length() && locate(ln.charAt(i.get())))
+			if (i.get()<ln.length() && locate(ln.charAt(i.get()))) {
+				i.incr();
 				return true;
+			}
 		} else {
-			if (i.get()<ln.length() && !locate(ln.charAt(i.get())))
+			if (i.get()<ln.length() && !locate(ln.charAt(i.get()))) {
+				i.incr();
 				return true;
+			}
 		}
 		return false;
 	}
@@ -75,5 +79,34 @@ public class SEccl extends SE {
 				return true;
 		}
 		return false;
+	}
+
+	/* esc - handle C-like escapes
+	 * if a[i] is \, following char may be special.
+	 * updates i if so.
+	 * in any case, returns the character.
+	 */
+	protected static char esc(String a, Int i) {
+		char c = a.charAt(i.get());
+		if (c != '\\')
+			return c;
+		if (i.get() >= a.length())
+			return '\\';	/* not special at end */
+		i.incr();
+		c = a.charAt(i.get());
+		switch (c) {
+		// 'd' not useful here
+		case 'n':
+			return ('\n');
+		case 'r':
+			return ('\r');
+		case 't':
+			return ('\t');
+		// 'w' not allowed here
+		case '\\':
+			return ('\\');
+		default:
+			return (c);
+		}
 	}
 }

@@ -34,12 +34,18 @@ public class RE {
 	final int ERR = -1;
 
 	protected StringBuffer myPat;
+	protected String origPatt;
 
 	/** Construct an RE object, given a pattern.
 	 * @throws RESyntaxException if bad syntax.
 	 */
 	public RE(String patt) throws RESyntaxException {
+		origPatt = patt;
 		myPat = compile(patt);
+	}
+
+	public String toString() {
+		return "RE[" + origPatt + "-->" + myPat + "]";
 	}
 
 	/** Match a pattern in a given string. Designed for light-duty

@@ -11,6 +11,7 @@ import java.util.*;
  *
  * NOT FINISHED. TODO:
  * Get doMatch() working 100% for all types.
+ * esc() must return an SE so it can do \w \s \d as well as \n \t \b etc.
  * Pass array of SEs into amatch() for use of Closures, write SEclos.amatch().
  * NO NO NO -- put the iterations in doMatch, not ses amatch!
  *
@@ -34,6 +35,9 @@ public class RE {
 	public static final char CLOSURE_ANY = *;
 	public static final char CLOSURE_ZERO_OR_ONE = ?;
 	public static final char CLOSURE_ONE_OR_MORE = +;
+	public static final char CLOSURE_NUMERIC = {;	// XXX
+	public static final char CLOSURE_NUMERIC_END = };	// XXX
+
 	public static final char EOL = $;
 	public static final char BOL = ^;
 	public static final char ANY = .;
@@ -42,15 +46,25 @@ public class RE {
 	public static final char OR = |;			// XXX Extended RE
 	public static final char GRP = (;			// XXX Extended RE
 	public static final char GRPEND = );		// XXX Extended RE
-	public static final char WORD = w;		// XXX Perlish
-	public static final char NUMBER = n;		// XXX Perlish
-	public static final char LITCHAR = \\;
-	public static final char NEGATE = ^;
+	public static final char LITCHAR = \\;	// Escape.
+	// These are for use in CCLs
+	public static final char NEGCCL = ^;
 	public static final char DASH = -;
+	// These must be preceded by LITCHAR to enable them
+	public static final char DIGIT = d;		// XXX Perlish
+	public static final char SPACE = s;		// XXX Perlish
+	public static final char TAB = t;			// XXX Perlish
+	public static final char UNICHAR = u;		// Unicode char, like Java
+	public static final char WORDCHAR = w;	// XXX Perlish
+
 	final int ERR = -1;
 
 	protected SE[] myPat;
 	protected String origPatt;
+
+	/** The "flyweight" SE for \w */
+	// XXX must split SE into its own set of classes.
+	// protected static SE wordChars = new SEccl("[a-zA-Z_0-9]", new Int(0));
 
 	/** Construct an RE object, given a pattern.
 	 * @throws RESyntaxException if bad syntax.
@@ -58,17 +72,6 @@ public class RE {
 	public RE(String patt) throws RESyntaxException {
 		origPatt = patt;
 		myPat = compile(patt);
-	}
-
-	public String toString() {
-		StringBuffer res = new StringBuffer("RE[" + origPatt + "-->");
-		for (int i=0; i<myPat.length; i++) {
-			if (i>0)
-				res.append(,);
-			res.append(myPat[i]);
-		}
-		res.append(]);
-		return res.toString();
 	}
 
 	protected static RE singleton;
@@ -90,26 +93,64 @@ public class RE {
 	 * @return True if the RE matches anyplace in the String.
 	 */
 	public boolean isMatch(String str){
-		return doMatch(myPat, str);
+		return doMatch(myPat, str, false);
+	}
+
+	/** Match the compiled pattern stored in the RE in a given String,
+	 * with control over case sensitivity.
+	 * @input str - string to match RE in
+	 * param ignoreCase -- true if case is to be ignored.
+	 * @return True if the RE matches anyplace in the String.
+	 */
+	public boolean isMatch(String str, boolean ignoreCase){
+		return doMatch(myPat, str, ignoreCase);
 	}
 
 	/** Match the compiled pattern stored in the RE in a given String.
 	 * @return A Match object indicating the position & length of the match.
 	 * Null if no match.
 	 */
-	public Match match(String str){ /*XXX*/ return null; }
+	public Match match(String str){ return match(str, false); }
+
+	/** Match the compiled pattern in this RE against a given string,
+	 * with control over case sensitivity.
+	 */
+	public Match match(String str, boolean ignoreCase) {
+	 	return null;			// XXX
+	}
 
 	/** Match all occurrences of the compiled pattern stored in the 
 	 * RE against the given String.
 	 * @return Array of Match objects, each indicating the position & 
 	 * length of the match. Array is length 0 if no matches.
 	 */
-	public Match[] matches(String str){ /*XXX*/ return null; }
+	public Match[] matches(String str){ return matches(str, false); }
 
+	/** Match all occurrences,
+	 * with control over case sensitivity.
+	 */
+	public Match[] matches(String str, boolean ignoreCase) {
+	 	return null;			// XXX
+	}
+ 
 	///////////////////////////////////////////////////////////////
 	// END OF PUBLIC PART OF API -- remainder omitted in some listings.
 	///////////////////////////////////////////////////////////////
 	//-
+
+	/** Return a string representation of the RE */
+	public String toString() {
+		if (myPat == null || myPat.length == 0)
+			return "RE[null]";
+		StringBuffer res = new StringBuffer("RE[" + origPatt + "-->");
+		for (int i=0; i<myPat.length; i++) {
+			if (i>0)
+				res.append(,);
+			res.append(myPat[i]);
+		}
+		res.append(]);
+		return res.toString();
+	}
 
 	/* compile -- make pattern from arg.
 	 * @return compiled pattern in an array of SE
@@ -135,14 +176,17 @@ public class RE {
 				v.addElement(new SEeol());
 			} else if (c == CCL) {
 				v.addElement(new SEccl(arg, i));
-			// "*" not special unless it follows something;
+			// closures (*,+,?,{,} not special unless they follow something.
 			// replace element it follows with CLOSURE referring to it
-			} else if (i.get() > 0 &&
-				(c == CLOSURE_ANY ||
-				 c == CLOSURE_ONE_OR_MORE ||
-				 c == CLOSURE_ZERO_OR_ONE)) {
+			} else if (i.get() > 0 && c == CLOSURE_ANY) {	// * = {0,}
 				int last = v.size()-1;
-				v.setElementAt(new SEclos(c, (SE)v.elementAt(last)), last);
+				v.setElementAt(new SEclos(0, SEclos_NOMAX, (SE)v.elementAt(last)), last);
+			} else if (i.get() > 0 && c == CLOSURE_ONE_OR_MORE) { // + -> {1,}
+				int last = v.size()-1;
+				v.setElementAt(new SEclos(1, SEclos_NOMAX, (SE)v.elementAt(last)), last);
+			} else if (i.get() > 0 && c == CLOSURE_ZERO_OR_ONE) { // ? -> {0,1}
+				int last = v.size()-1;
+				v.setElementAt(new SEclos(0, 1, (SE)v.elementAt(last)), last);
 			} else {
 				// "Ordinary" character.
 				v.addElement(new SEchar(esc(arg, i)));
@@ -162,7 +206,7 @@ public class RE {
 	/* doMatch -- find pattern match anywhere on line.
 	 * The sacred heart of the matching engine.
 	 */
-	protected boolean doMatch(SE[] patt, String line) {
+	protected boolean doMatch(SE[] patt, String line, boolean ignoreCase) {
 		Int	i = new Int();
 		int il;
 		boolean failed = false;
@@ -194,7 +238,7 @@ public class RE {
 	protected static char esc(String a, Int i) {
 		if (a.charAt(i.get()) != \\)
 			return a.charAt(i.get());
-		if (a.charAt(i.get()+1) == \0)
+		if (i.get() >= a.length())
 			return \\;	/* not special at end */
 		i.incr();
 		if (a.charAt(i.get()) == n)
@@ -279,7 +323,7 @@ public class RE {
 			i.incr();			/* skip over [ */
 			if (i.get()>=arg.length())
 				throw new RESyntaxException("pattern ends with [");
-			if (arg.charAt(i.get()) == NEGATE) {
+			if (arg.charAt(i.get()) == NEGCCL) {
 				negate = true;
 				i.incr();
 			}
@@ -339,21 +383,30 @@ public class RE {
 		}
 	}
 
-	/** SEclos represents one Closure */
+	/** The constant meaning no upper bound. */
+	protected final static int SEclos_NOMAX = Integer.MAX_VALUE;
+
+	/** SEclos represents one "Closure" or repetition */
 	class SEclos extends SE {
-		/** Is this closure *, + or ? */
-		int type;
+		/** The minimum number of times that must match */
+		int minimum;
+		/** The maximum number number of times allowed for a match */
+		int maximum;
 		/** What SubExpression is this a closure of? */
 		SE target;
 
 		/** Make me printable */
 		public String toString() {
-			return "SEclos(\"" + (char)type + "\" -> " + target + ")";
+			return "SEclos(" + target + "{" + minimum + "," + maximum + "})";
 		}
 
 		/** Construct a Closure */
-		public SEclos(char ty, SE ta) {
-			type = ty;
+		public SEclos(int min, int max, SE ta) {
+			if (minimum < 0)
+				throw new IllegalArgumentException(
+					"Minimum must be non-negative");
+			minimum = min;
+			maximum = max;
 			target = ta;
 		}
 

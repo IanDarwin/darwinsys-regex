@@ -9,16 +9,19 @@ public class SEchar extends SE {
 
 	public String toString() { return "'" + val + "'"; }
 
+	/** amatch -- match one SE with one sub-input.
+	 * @return true iff ln.charAt(i)==the character we were constructed with.
+	 */
 	public boolean amatch(String ln, Int i) {
-		System.out.println("SEchar.amatch("+ln+','+i.get() + "), want " + val);
+		// DBug.println("SEchar", "SEchar.amatch("+ln+','+i.get() + "), want " + val);
 		if (i.get() < ln.length()) {
 			boolean success = (ln.charAt(i.get()) == val);
-			System.out.println("SEchar.amatch: success="+success);
+			// DBug.println("SEchar", "SEchar.amatch: success="+success);
 			if (success)
 				i.incr();
 			return success;
 		} 
-		System.out.println("SEchar.amatch: hit end of string");
+		// DBug.println("SEchar", "SEchar.amatch: hit end of string");
 		return false;					// end of string
 	}
 }

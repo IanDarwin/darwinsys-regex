@@ -1,4 +1,4 @@
-/** SEmult represents one "Closure" or repetition.
+/** SEmult represents one multiplier (aka "Closure", "quantifier", repetition).
  * The four forms in the RE input, * ? + and {m,n}, are all
  * represented by an instance of this class, with the
  * minimum and maximum number set appropriately.
@@ -15,7 +15,7 @@ public class SEmult extends SE {
 	/** What SubExpression is this a closure of? */
 	SE target;
 
-	/** Make me printable */
+	/** Retuern a printable representation of this SE */
 	public String toString() {
 		StringBuffer sb = new StringBuffer("SEmult(").append(target).append('{').append(minimum).append(',');
 		if (maximum==NOMAX)

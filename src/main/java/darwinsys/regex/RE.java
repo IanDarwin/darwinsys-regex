@@ -53,6 +53,7 @@ import java.util.*;
 
 //+
 public class RE {
+//-
 
 	public static final char MULT_ANY = *;
 	public static final char MULT_ZERO_OR_ONE = ?;
@@ -74,17 +75,18 @@ public class RE {
 	public static final char NEGCCL = ^;
 	public static final char DASH = -;
 	// These must be preceded by LITCHAR to enable them
-	public static final char DIGIT = d;		// XXX Perlish
-	public static final char SPACE = s;		// XXX Perlish
-	public static final char TAB = t;			// XXX Perlish
+	public static final char DIGIT = d;
+	public static final char SPACE = s;
+	public static final char TAB = t;	
 	public static final char UNICHAR = u;		// Unicode char, like Java
-	public static final char WORDCHAR = w;	// XXX Perlish
+	public static final char WORDCHAR = w;
 
 	protected final int ERR = -1;
 
 	protected SE[] myPat; 
 	protected String origPatt;
 
+	//+
 	/** Construct an RE object, given a pattern.
 	 * @throws RESyntaxException if bad syntax.
 	 */
@@ -135,16 +137,9 @@ public class RE {
 	 * with control over case sensitivity.
 	 */
 	public Match match(String str, boolean ignoreCase) {
-	 	return null;			// XXX
+	 	return null;			// XXX Not Implemented Yet
 	}
 
-	/** Match all occurrences,
-	 * with control over case sensitivity.
-	 */
-	public Match[] matches(String str, boolean ignoreCase) {
-	 	return null;			// XXX
-	}
- 
 	///////////////////////////////////////////////////////////////
 	// END OF PUBLIC PART OF API -- remainder omitted in some listings.
 	///////////////////////////////////////////////////////////////
@@ -309,7 +304,7 @@ public class RE {
 				v.setElementAt(new SEmult(0, 1, (SE)v.elementAt(last)), last);
 			// {m,n} multiplier
 			} else if (i.get() > 0 && c == MULT_NUMERIC) {
-				i.incr();		// skip {
+				i.incr();		// skip MULT_NUMERIC
 				int ii = i.get();
 				int mid = arg.indexOf(MULT_NUMERIC_SEP, ii);
 				int end = arg.indexOf(MULT_NUMERIC_END, ii);
@@ -391,7 +386,7 @@ public class RE {
 		i.incr();
 		c = a.charAt(i.get());
 		switch (c) {
-		case d:
+		case DIGIT:
 			return myDigits;
 		case D:
 			return myNOTDigits;
@@ -403,18 +398,18 @@ public class RE {
 			return new SEchar(\n);
 		case r:
 			return new SEchar(\r);
-		case s:
+		case SPACE:
 			return mySpaces;
 		case S:
 			return myNOTSpaces;
-		case t:
+		case TAB:
 			return new SEchar(\t);
-		case w:
+		case WORDCHAR:
 			return myWordChars;
 		case W:
 			return myNOTWordChars;
-		case \\:
-			return new SEchar(\\);
+		case LITCHAR:
+			return new SEchar(LITCHAR);
 		default:
 			return new SEchar(c);
 		}

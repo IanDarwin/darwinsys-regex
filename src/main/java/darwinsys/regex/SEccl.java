@@ -1,4 +1,10 @@
-/** SEccl represents on Character Class
+/** SEccl represents one Character Class, or list of characters
+ * inside square brackets.  Construct with a list; the constructor
+ * will expand dashes if possible, so that new SEccl("[a-e]") will
+ * generate an SECCL for "abcde".
+ * <P>
+ * Our match return returns true if
+ * called to match any one charater that is/is not in that set.
  * @author Ian Darwin, ian@darwinsys.com
  * $Id$
  */

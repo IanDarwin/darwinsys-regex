@@ -8,5 +8,9 @@ public abstract class SE {
 	 * @eturn true if valid match, false if not.
 	 */
 	public abstract boolean amatch(String ln, Int i);
-}
 
+	/** Generate a printable representation of this SubExpression. */
+	public String toString() {
+		return "SE";
+	}
+}

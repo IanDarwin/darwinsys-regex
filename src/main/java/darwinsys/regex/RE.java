@@ -25,22 +25,19 @@ import java.util.*;
  * *	multiplier for zero or more repetitions (short for {0,})
  * +	multiplier for one or more repetitions (short for {1,})
  * ?	multiplier for zero or one repetitions (short for {0,1})
+ * </PRE>
+ * <P>The following are planned to be implemented very soon:
+ * <PRE>
  * \w	characters in a word (\w+ for a word)
  * \d	numeric digits (\d+ for a number)
  * \f	numeric digits plus . e f (\f+ for floating number)
+ * </PRE>
+ * <P>The following functionality must be added someday:
+ * <BR>-- Alternation and grouping () |
+ * <BR>-- Versions that return Match(), not just boolean version.
+ * <BR>-- Use that to write sub() functionality.
+ * </P>
  * <P>
- * NOT FINISHED. TODO:
- * Get doMatch() working 100% for all types.
- * esc() must return an SE so it can do \w \s \d as well as \n \t \b etc.
- * Beware: there are two different uses of esc().
- * Add iterations in doMatch for multipliers (SEmults). 
- * <P>
- * TODO: More Functionality:
- * Write versions that return Match(), not just boolean version.
- * Use that to write sub() functionality.
- * Add Perl-style RE components \w \d etc.
- * Add alternation and grouping () |
- *
  * @author Ian F. Darwin, ian@darwinsys.com.
  * Based in part on a version I wrote years ago in C as part of a
  * text editor implementation, in turn based on Kernighan & Plaughers
@@ -82,7 +79,7 @@ public class RE {
 	protected SE[] myPat;
 	protected String origPatt;
 
-	// Since these next five REs are constant, we can use the "flyweight"
+	// Since these next few REs are constant, we can use the "flyweight"
 	// Design Pattern for them - we only need one instance of each, ever.
 	// This does NOT extend to multipliers like * + ?
 
@@ -255,9 +252,12 @@ public class RE {
 				}
 			}
 			// If matched all elements of patt, we have ignition!
-			if (!failed)
+			if (!failed) {
+				System.out.println("doMatch() all ip at " +il+ "; return true");
 				return true;
+			}
 		}
+		System.out.println("doMatch: Got to end so return " + !failed);
 		return !failed;
 	}
 

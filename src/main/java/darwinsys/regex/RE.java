@@ -33,16 +33,15 @@ import java.util.*;
  * \\s	white space
  * </PRE>
  * <P>The following are planned to be implemented very soon:
- * <PRE>
- * \\u	unicode character, as in Java.
- * \\f	numeric digits plus . e f (\f+ for floating number)
- * </PRE>
+ * <BR>-- Versions that return Match(), not just boolean version.
+ * <BR>-- Use that version of Match to write sub() functionality.
+ * <BR>\\u	unicode character, as in Java.
  * <P>The following functionality must be added someday:
  * <BR>-- Alternation and grouping () |
- * <BR>-- Versions that return Match(), not just boolean version.
- * <BR>-- Use that to write sub() functionality.
+ * <P>The following are possible later.
+ * <BR>\\f	numeric digits plus . e f (\f+ for floating number)
  * </P>
- * <P>
+ * @see	bugs.html - the bug list and TODO file.
  * @author Ian F. Darwin, ian@darwinsys.com.
  * Based in part on a version I wrote years ago in C as part of a
  * text editor implementation, in turn based on Kernighan & Plaughers
@@ -315,13 +314,13 @@ public class RE {
 				i.set(end);
 				String first = arg.substring(ii, mid);
 				String second = arg.substring(mid+1, end);
-				// System.out.println("RANGE: " + first + "," + second);
 				int min = 0;
 				if (first.length() > 0)
 					min = Integer.parseInt(first);
 				int max = 0;
 				if (second.length() > 0)
 					max = Integer.parseInt(second);
+				Debug.println("SEmult", "Compile: " + min + "," + max);
 				// Now replace the target with a MULT referring to it.
 				int last = v.size()-1;
 				SE mult = new SEmult(min, max, (SE)v.elementAt(last));
@@ -353,10 +352,10 @@ public class RE {
 		// Try patt starting at each char position in line.
 		// i gets incr()d by each amatch() to skip over what it looks at.
 		for (il=0, i.set(il); il<line.length(); il++, i.set(il)) {
-			System.out.println("doMatch: il="+il);
+			Debug.println("doMatch", "doMatch: il="+il);
 			failed = false;
 			for (int ip=0; ip<patt.length; ip++) {
-				System.out.println("doMatch: ip="+ip);
+				Debug.println("doMatch", "doMatch: ip="+ip);
 				if (!patt[ip].amatch(line, i)) {
 					failed = true;
 					break;		// out of inner loop
@@ -364,11 +363,11 @@ public class RE {
 			}
 			// If matched all elements of patt, we have ignition!
 			if (!failed) {
-				System.out.println("doMatch() all patt at " +il+ "; return true");
+				Debug.println("doMatch", "doMatch() all patt at " +il+ "; return true");
 				return true;
 			}
 		}
-		System.out.println("doMatch: Got to end so return " + !failed);
+		Debug.println("doMatch", "doMatch: Got to end so return " + !failed);
 		return !failed;
 	}
 

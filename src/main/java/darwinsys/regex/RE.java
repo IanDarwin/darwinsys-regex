@@ -39,7 +39,7 @@ import java.util.*;
  * </PRE>
  *
  * @see	bugs.html - the bug list and TODO file.
- * @author Ian F. Darwin, ian@darwinsys.com.
+ * @author Ian F. Darwin, http://www.darwinsys.com/.
  * Based in part on a version I wrote years ago in C as part of a
  * text editor implementation, in turn based on Kernighan & Plaugher's
  * <I>Software Tools In Pascal</I> implementation.

@@ -6,7 +6,7 @@ import com.darwinsys.util.Debug;
  * The four forms in the RE input, * ? + and {m,n}, are all
  * represented by an instance of this class, with the
  * minimum and maximum number set appropriately.
- * @author Ian Darwin, ian@darwinsys.com
+ * @author Ian Darwin, http://www.darwinsys.com/
  * $Id$
  */
 public class SEmult extends SE {

@@ -1,7 +1,7 @@
 package com.darwinsys.regexp;
 
 /** Represent one sub-expression in an RE.
- * @author Ian Darwin, ian@darwinsys.com
+ * @author Ian Darwin, http://www.darwinsys.com/
  * $Id$
  */
 public abstract class SE {

@@ -3,7 +3,7 @@ package com.darwinsys.regexp;
 import com.darwinsys.util.Debug;
 
 /* SEchar - represent one ordinary character.
- * @author Ian Darwin, ian@darwinsys.com
+ * @author Ian Darwin, http://www.darwinsys.com/
  * $Id$
  */
 public class SEchar extends SE {

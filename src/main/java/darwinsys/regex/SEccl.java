@@ -7,7 +7,7 @@ package com.darwinsys.regexp;
  * <P>
  * Our match return returns true if
  * called to match any one charater that is/is not in that set.
- * @author Ian Darwin, ian@darwinsys.com
+ * @author Ian Darwin, http://www.darwinsys.com/
  * $Id$
  */
 public class SEccl extends SE {

@@ -52,8 +52,9 @@ public class RE {
 	public static final char MULT_ANY = *;
 	public static final char MULT_ZERO_OR_ONE = ?;
 	public static final char MULT_ONE_OR_MORE = +;
-	public static final char MULT_NUMERIC = {;	// XXX
-	public static final char MULT_NUMERIC_END = };	// XXX
+	public static final char MULT_NUMERIC = {;
+	public static final char MULT_NUMERIC_SEP = ,;
+	public static final char MULT_NUMERIC_END = };
 
 	public static final char EOL = $;
 	public static final char BOL = ^;
@@ -147,13 +148,6 @@ public class RE {
 	 	return null;			// XXX
 	}
 
-	/** Match all occurrences of the compiled pattern stored in the 
-	 * RE against the given String.
-	 * @return Array of Match objects, each indicating the position & 
-	 * length of the match. Array is length 0 if no matches.
-	 */
-	public Match[] matches(String str){ return matches(str, false); }
-
 	/** Match all occurrences,
 	 * with control over case sensitivity.
 	 */
@@ -215,8 +209,32 @@ public class RE {
 			} else if (i.get() > 0 && c == MULT_ZERO_OR_ONE) { // ? -> {0,1}
 				int last = v.size()-1;
 				v.setElementAt(new SEmult(0, 1, (SE)v.elementAt(last)), last);
-			} else {
-				// "Ordinary" character.
+			// {m,n} multiplier
+			} else if (i.get() > 0 && c == MULT_NUMERIC) {
+				i.incr();		// skip {
+				int ii = i.get();
+				int mid = arg.indexOf(MULT_NUMERIC_SEP, ii);
+				int end = arg.indexOf(MULT_NUMERIC_END, ii);
+				if (mid == -1)
+					throw new RESyntaxException(MULT_NUMERIC + " needs comma");
+				if (end == -1)
+					throw new RESyntaxException("unclosed " + MULT_NUMERIC);
+				i.set(end);
+				String first = arg.substring(ii, mid);
+				String second = arg.substring(mid+1, end);
+				// System.out.println("RANGE: " + first + "," + second);
+				int min = 0;
+				if (first.length() > 0)
+					min = Integer.parseInt(first);
+				int max = 0;
+				if (second.length() > 0)
+					max = Integer.parseInt(second);
+				// Now replace the target with a MULT referring to it.
+				int last = v.size()-1;
+				SE mult = new SEmult(min, max, (SE)v.elementAt(last));
+				v.setElementAt(mult, last);
+			} else {	 
+				// ALL ELSE IS AN "Ordinary" character.
 				v.addElement(new SEchar(esc(arg, i)));
 			}
 			lastj = lj;
@@ -229,7 +247,6 @@ public class RE {
 		v.toArray(a);
 		return a;
 	}
-
 
 	/* doMatch -- find pattern match anywhere on line.
 	 * The sacred heart of the matching engine.

@@ -14,7 +14,7 @@ public class SEccl extends SE {
 	StringBuffer val = new StringBuffer();
 
 	public String toString() {
-		return "SEccl[" + val.toString() + "]";
+		return "SEccl[" + (negate ? "^" : "") + val.toString() + "]";
 	}
 
 	/** Construct a CCL. Some of this code was in "getCCL()" */

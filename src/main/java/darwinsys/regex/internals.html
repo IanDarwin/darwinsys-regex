@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+	<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+	<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+	<!-- Originally exported from FrameMaker, now maintained with vi -->
+	<TITLE>Regular Expression API - Internals</TITLE>
+</HEAD>
+<BODY BGCOLOR="white">
+<H1>Regular Expression API - Internals</H1>
+<H2>Implementation Details</H2>
+<P><A HREF="RE.java">This source file</A> lists the complete 
+source code of the com.darwinsys.regexp.<EM>RE</EM> <EM>API</EM>.
+As you've already seen, using regular expressions to match patterns in string(s) involves two steps, generally called compiling and matching. </P>
+<TABLE BORDER=1>
+<CAPTION>
+<H6> How Regular Expressions Work</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P>
+           THERE WILL BE A DIAGRAM HERE SOMEDAY</P>
+<P>
+</TD>
+</TR>
+</TABLE>
+<P>
+The matching code in doMatch() simply &quot;walks&quot; the pattern, comparing each token in the pattern to see if there is one or more characters that match it. Accordingly, the two main routines are called <EM>
+compile</EM>
+ and <EM>
+match</EM>
+. <EM>
+Compile</EM>
+ is <EM>
+static</EM>
+ so that it can be called from the static compile-and-match method used in <I>Using regular expressions in Java.</I>.  It is called from the constructor in a non-static context, but since it simply returns the constructed pattern, it works as well in either type of context. </P>
+<P>
+The compiled pattern is interesting. The regular expression is broken down into a series of sub-expressions, and stored as an array of SE objects. Each character, or metacharacter, ^, $, ., multiplier, etc., is represented by an <EM>
+SE</EM>
+. The abstract class <EM>
+<a href="SE.java">SE</a></EM>
+ provides an <EM>
+amatch()</EM>
+ method to see if there is a match between the string we're examining and the current sub-expression. </P>
+<P>There are several subclasses of SE:
+<ul>
+<li><a href="SEccl.java">SEccl.java</a>, represents a character class</li>
+<li><a href="SEchar.java">SEchar.java</a> represents one literal character</li>
+<li><a href="SEmult.java">SEmult.java</a> represents one (greedy) closure</li>
+<li><a href="SEor.java">SEor.java</a> represents an alternation</li>
+</ul>
+The SEor class does not need a corresponding "alternation" object; it
+simply has a Left and a Right object, and each of these may represent
+more than one object.
+<P>
+Several subclasses of SE are not shown. For example, <EM>
+SEchar</EM>
+ is the subclass used to represent a literal character. SEchar's amatch simply compares the character at the current position in the input against the character it stored. The abstract <EM>
+SE</EM>
+ also provides <EM>
+toString()</EM>
+, which will only be called if somebody adding a new sub-expression type forgets to provide one (the <EM>
+Int</EM>
+ class is our customized re-write of <EM>
+java.lang.Integer</EM>
+; it features <EM>
+incr()</EM>
+ and <EM>
+decr()</EM>
+ methods as well as <EM>
+set()</EM>
+ and <EM>
+get()</EM>
+ methods, but omits most of the baggage of <EM>
+Integer</EM>
+).</P>
+<P>
+This design greatly simplifies the overall logic of the <EM>RE</EM> class. 
+For example, when building it, there was a time when all the primitive
+types (characters, character classes, ^, . and $) worked, but the
+&quot;or&quot; function | did not exist yet. I was able
+to add the <EM>
+SEor</EM>
+ subclass just by changing compile() slightly, and do all the rummaging around in <EM>
+SEor</EM>
+'s amatch, without complicating the code in domatch() that calls it. Again we see the benefits of Java's Object-oriented approach. </P>
+<P>
+Also note that the simpler, &quot;atomic&quot; SE's such as ^, ., and $ are implemented as anonymous inner classes within the <EM>RE</EM>
+class. Why create a named class when there only needs to be one
+instance? Since any one of these might occur several times, and
+knowing that any of them is interchangeable, we use the Design
+Pattern (see the Gang of Four book of the same name)
+known as &quot;flyweight&quot; or ultra-light.
+That is, we only create one of each of these, and we use it as
+often as necessary. This is a performance optimization. We allocate
+all of the &quot;flyweight&quot; objects only once, when the <EM>RE</EM>
+class is loaded (they're <EM>static</EM>), and they are then available 
+for use by any instance of the <EM> RE</EM>
+class. To implement this, we only had to change the <EM>
+compile()</EM>
+method to insert references to the appropriate flyweight into the list
+of SE's instead of constructing a new instance each time.  </P>
+<P>See <a href="RE.java">the source code for the main RE class</a></P>
+</DIV>
+<HR>
+See also: <a href="bugs.html">some bugs</a> and other issues.
+</BODY>
+</HTML>

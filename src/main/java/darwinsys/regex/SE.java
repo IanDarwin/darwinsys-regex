@@ -3,8 +3,9 @@
  * $Id$
  */
 public abstract class SE {
-	/** Start matching at i in ln. Increment i as much as matches.
-	 * Return true if valid match, false if not.
+	/** Start matching at i in ln. 
+	 * Increment i as much as matches.
+	 * @eturn true if valid match, false if not.
 	 */
 	public abstract boolean amatch(String ln, Int i);
 }

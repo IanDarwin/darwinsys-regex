@@ -7,14 +7,15 @@ public class SEchar extends SE {
 
 	public SEchar(char ch) { val = ch; }
 
-	public String toString() { return "SE(" + val + ')'; }
+	public String toString() { return "'" + val + "'"; }
 
 	public boolean amatch(String ln, Int i) {
-		System.out.println("SEchar.amatch("+ln+','+i.get() + "), seek" + val);
+		System.out.println("SEchar.amatch("+ln+','+i.get() + "), want " + val);
 		if (i.get() < ln.length()) {
 			boolean success = (ln.charAt(i.get()) == val);
 			System.out.println("SEchar.amatch: success="+success);
-			i.incr();
+			if (success)
+				i.incr();
 			return success;
 		} 
 		System.out.println("SEchar.amatch: hit end of string");

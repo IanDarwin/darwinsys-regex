@@ -13,7 +13,7 @@
  * @author Ian F. Darwin, ian@darwinsys.com.
  * Patterned after a version I wrote years ago in C as part of a
  * text editor implementation, in turn based on Kernighan & Plaughers
- * <I>Software Tools</I>.
+ * <I>Software Tools In Pascal</I> implementation.
  * @version $Id$
  */
 
@@ -94,32 +94,34 @@ public class RE {
 
 		StringBuffer patt = new StringBuffer(arg.length()*2); // guess length
 
-		for (int i=0, j=0; i<arg.length(); i++) {
-			if (arg.charAt(i) == ANY)
+		for (int i=0; i<arg.length(); i++) {
+			if (arg.charAt(i) == ANY) {
 				patt.append(ANY);
 			// "^" only special at beginning/
-			else if (arg.charAt(i) == BOL && i == 0)
+			} else if (arg.charAt(i) == BOL && i == 0) {
 				patt.append(BOL);
 			// "$" only special at end */
-			else if (arg.charAt(i) == EOL && i==arg.length()-1)
+			} else if (arg.charAt(i) == EOL && i > 0) {
 				patt.append(EOL);
-			else if (arg.charAt(i) == CCL)
+			} else if (arg.charAt(i) == CCL) {
 				if (getccl(arg, i, patt) == false)
 					break;
 			// "*" not special unless it follows something
-			else if (arg.charAt(i) == CLOSURE && i > 0) {
+			} else if (arg.charAt(i) == CLOSURE && i > 0) {
 				lj = lastj;
 				if (patt.charAt(lj) == BOL || patt.charAt(lj) == EOL ||
 					patt.charAt(lj) == CLOSURE)
 					break;	/* terminate loop */
 				else
-					stclose(patt, j, lastj);
+					patt.insert(lastj, CLOSURE); /* where orig. pattern began */
 			} else {
+				// "Ordinary" char, but must be LITCHARd so we dont
+				// mix it up with ^ ! x etc.
 				patt.append(LITCHAR);
 				patt.append(esc(arg, i));
 			}
 			lastj = lj;
-		}
+		} 
 		if (done) {				/* finished early */
 			throw new RESyntaxException("incomplete pattern");
 		} else
@@ -149,18 +151,6 @@ public class RE {
 		return arg.charAt(i) == CCLEND;
 	}
 
-	/* stclose -- store closure into array at patt[j] */
-	protected static int stclose(StringBuffer patt, int j, int lastj) {
-		int jp, jt;
-
-		for (jp = j - 1; jp >= lastj; --jp) {
-			jt = jp + CLOSIZE;
-			patt.setCharAt(jt, patt.charAt(jp));
-		}
-		j += CLOSIZE;
-		patt.insert(lastj, CLOSURE);	/* where original pattern began */
-		return j;
-	}
 
 	/* dodash - expand dash shorthand set at scr[i] into dest[j] */
 	protected static int dodash(

@@ -1,3 +1,5 @@
+# This version passes 10 of 12 simple tests, and doesnt throw any exceptions.
+
 import java.util.*;
 
 /**
@@ -64,8 +66,9 @@ public class RE {
 	public String toString() {
 		StringBuffer res = new StringBuffer("RE[" + origPatt + "-->");
 		for (int i=0; i<myPat.length; i++) {
+			if (i>0)
+				res.append(,);
 			res.append(myPat[i]);
-			res.append(,);
 		}
 		res.append(]);
 		return res.toString();
@@ -163,23 +166,28 @@ public class RE {
 
 
 	/* doMatch -- find pattern match anywhere on line.
-	 * The true inner heart of the matching engine.
+	 * The sacred heart of the matching engine.
 	 */
 	protected boolean doMatch(SE[] patt, String line) {
 		Int	i = new Int();
-		boolean done = false;
+		int il;
+		boolean failed = false;
 
 		// Try patt starting at each char position in line.
-		// i gets incremented by each amatch() to skip over what it looks at.
-		for (int il=0; il<line.length(); i.set(++il)) {
+		// i gets incr()d by each amatch() to skip over what it looks at.
+		for (il=0, i.set(il); il<line.length(); il++, i.set(il)) {
+			failed = false;
 			for (int ip=0; ip<patt.length; ip++) {
 				if (!patt[ip].amatch(line, i)) {
-					done = true;
+					failed = true;
 					break;		// out of inner loop
 				}
 			}
+			// If matched all elements of patt, we have ignition!
+			if (!failed)
+				return true;
 		}
-		return !done;
+		return !failed;
 	}
 
 	/* esc - handle C-like escapes
@@ -217,15 +225,16 @@ public class RE {
 
 		public boolean amatch(String ln, Int i) {
 			System.out.println("SEchar.amatch("+ln+,+i.get() + ));
-			if (ln.length() >= i.get()) {
+			if (i.get() < ln.length()) {
+				boolean success = (ln.charAt(i.get()) == val);
+				System.out.println("SEchar.amatch: success="+success);
+				i.incr();
+				return success;
+			} else {
 				i.incr();
 				System.out.println("SEchar.amatch: EOS");
 				return false;					// end of string
 			}
-			boolean success = (ln.charAt(i.get()) == val);
-			System.out.println("SEchar.amatch: success="+success);
-			i.incr();
-			return success;
 		}
 	}
 
@@ -317,9 +326,12 @@ public class RE {
 
 		public boolean amatch(String ln, Int i) {
 			// match CCLs here
-			for (int k = 0; k<val.length(); k++)
+			for (int k = 0; k<val.length(); k++) {
+				if (ln.length() >= i.get())
+					return false;					// end of string
 				if (ln.charAt(i.get()) == k)
 					return true;
+			}
 			return false;
 		}
 	}

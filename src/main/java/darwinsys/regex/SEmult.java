@@ -1,5 +1,5 @@
 /** SErep represents one "Closure" or repetition.
- * The four forms in the RE input, * ? + and {}, are all
+ * The four forms in the RE input, * ? + and {m,n}, are all
  * represented by an instance of this class, with the
  * minimum and maximum number set appropriately.
  * @author Ian Darwin, ian@darwinsys.com
@@ -17,7 +17,13 @@ public class SErep extends SE {
 
 	/** Make me printable */
 	public String toString() {
-		return "SErep(" + target + "{" + minimum + "," + maximum + "})";
+		StringBuffer sb = new StringBuffer("SErep(").append(target).append('{').append(minimum).append(',');
+		if (maximum==NOMAX)
+			sb.append('*');
+		else
+			sb.append(maximum);
+		sb.append("})");
+		return sb.toString();
 	}
 
 	/** Construct a Closure */

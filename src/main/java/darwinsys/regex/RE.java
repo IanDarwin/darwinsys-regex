@@ -102,7 +102,7 @@ public class RE {
 	
 	/** Match a pattern in a given string. Designed for light-duty
 	 * use, as it compiles the pattern each time.
-	 * For multiples uses of the same pattern, construct an RE object,
+	 * For multiple uses of the same pattern, construct an RE object,
 	 * which stores the pattern inside it.
 	 */
 	public static Match match(String patt, String str){
@@ -211,10 +211,6 @@ public class RE {
 			return "\\D";
 		}
 	};
-	/** The "flyweight" SE for \f */
-	protected static SE myFloatChars = new SEccl("[0-9ef.]", new Int(0));
-	/** The "flyweight" SE for \F */
-	protected static SE myNOTFloatChars = new SEccl("[^0-9ef.]", new Int(0));
 	/** The "flyweight" SE for \s */
 	protected static SE mySpaces = new SE() {
 		public boolean amatch(String a, Int i) {
@@ -407,10 +403,6 @@ public class RE {
 			return myDigits;
 		case D:
 			return myNOTDigits;
-		case f:
-			return myFloatChars;
-		case F:
-			return myNOTFloatChars;
 		case n:
 			return new SEchar(\n);
 		case r:

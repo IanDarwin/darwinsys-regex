@@ -90,7 +90,9 @@ public class SEccl extends SE {
 	/* esc - handle C-like escapes
 	 * if a[i] is \, following char may be special.
 	 * updates i if so.
-	 * in any case, returns the character.
+	 * In any case, returns the character.
+	 * Cut down from esc() in RE.compile(); this version handles
+	 * a smaller set of escapes, and returns char instead of SEchar.
 	 */
 	protected static char esc(String a, Int i) {
 		char c = a.charAt(i.get());
@@ -108,6 +110,11 @@ public class SEccl extends SE {
 			return ('\r');
 		case 't':
 			return ('\t');
+		case 'u':
+			// assume followed by 4-digit hex string for Unicode character.
+			String hex = a.substring(i.get()+1, i.get()+5);
+			i.incr(4);
+			return (char)Integer.parseInt(hex, 16); 
 		// 'w' not allowed here
 		case '\\':
 			return ('\\');

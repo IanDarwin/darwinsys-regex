@@ -25,17 +25,17 @@ import java.util.*;
  * *	multiplier for zero or more repetitions (short for {0,})
  * +	multiplier for one or more repetitions (short for {1,})
  * ?	multiplier for zero or one repetitions (short for {0,1})
- * \t	Tab character
- * \r	return character (ASCII CR, Mac newline)
- * \n	newline character (ASCII LF, Unix newline)
- * \w	character in a word (\w+ for a word)
- * \d	numeric digit (\d+ for a number)
- * \s	white space
+ * \\t	Tab character
+ * \\r	return character (ASCII CR, Mac newline)
+ * \\n	newline character (ASCII LF, Unix newline)
+ * \\w	character in a word (\w+ for a word)
+ * \\d	numeric digit (\d+ for a number)
+ * \\s	white space
  * </PRE>
  * <P>The following are planned to be implemented very soon:
  * <PRE>
- * \u	unicode character, as in Java.
- * \f	numeric digits plus . e f (\f+ for floating number)
+ * \\u	unicode character, as in Java.
+ * \\f	numeric digits plus . e f (\f+ for floating number)
  * </PRE>
  * <P>The following functionality must be added someday:
  * <BR>-- Alternation and grouping () |

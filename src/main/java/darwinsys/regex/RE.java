@@ -10,7 +10,7 @@ import java.util.*;
  * replacing the innards of egrep with this code would be a mistake.
  * <P>
  * The subset of regular expression characters 
- * that this API accepts is as follows. Consult the OReilly book 
+ * that this API accepts is as follows. Consult the O'Reilly book 
  * <I>Mastering Regular Expressions</I> or any book on UNIX
  * user commands, if you are not familiar with regular expressions.
  * <PRE>
@@ -38,7 +38,7 @@ import java.util.*;
  * @see	bugs.html - the bug list and TODO file.
  * @author Ian F. Darwin, ian@darwinsys.com.
  * Based in part on a version I wrote years ago in C as part of a
- * text editor implementation, in turn based on Kernighan & Plaughers
+ * text editor implementation, in turn based on Kernighan & Plaugher's
  * <I>Software Tools In Pascal</I> implementation.
  *
  * @version $Id$
@@ -48,31 +48,31 @@ import java.util.*;
 public class RE {
 //-
 
-	public static final char MULT_ANY = *;
-	public static final char MULT_ZERO_OR_ONE = ?;
-	public static final char MULT_ONE_OR_MORE = +;
-	public static final char MULT_NUMERIC = {;
-	public static final char MULT_NUMERIC_SEP = ,;
-	public static final char MULT_NUMERIC_END = };
+	public static final char MULT_ANY = '*';
+	public static final char MULT_ZERO_OR_ONE = '?';
+	public static final char MULT_ONE_OR_MORE = '+';
+	public static final char MULT_NUMERIC = '{';
+	public static final char MULT_NUMERIC_SEP = ',';
+	public static final char MULT_NUMERIC_END = '}';
 
-	public static final char EOL = $;
-	public static final char BOL = ^;
-	public static final char ANY = .;
-	public static final char CCL = [;
-	public static final char CCLEND = ];
-	public static final char OR = |;			// XXX Extended RE
-	public static final char GRP = (;			// XXX Extended RE
-	public static final char GRPEND = );		// XXX Extended RE
-	public static final char LITCHAR = \\;	// Escape.
+	public static final char EOL = '$';
+	public static final char BOL = '^';
+	public static final char ANY = '.';
+	public static final char CCL = '[';
+	public static final char CCLEND = ']';
+	public static final char OR = '|';			// XXX Extended RE
+	public static final char GRP = '(';			// XXX Extended RE
+	public static final char GRPEND = ')';		// XXX Extended RE
+	public static final char LITCHAR = '\\';	// Escape.
 	// These are for use in CCLs
-	public static final char NEGCCL = ^;
-	public static final char DASH = -;
+	public static final char NEGCCL = '^';
+	public static final char DASH = '-';
 	// These must be preceded by LITCHAR to enable them
-	public static final char DIGIT = d;
-	public static final char SPACE = s;
-	public static final char TAB = t;	
-	public static final char UNICHAR = u;		// Unicode char, like Java
-	public static final char WORDCHAR = w;
+	public static final char DIGIT = 'd';
+	public static final char SPACE = 's';
+	public static final char TAB = 't';	
+	public static final char UNICHAR = 'u';		// Unicode char, like Java
+	public static final char WORDCHAR = 'w';
 
 	protected final int ERR = -1;
 
@@ -170,17 +170,17 @@ public class RE {
 		StringBuffer res = new StringBuffer("RE[");
 		for (int i=0; i<myPat.length; i++) {
 			if (i>0)
-				res.append(,);
+				res.append(',');
 			res.append(myPat[i]);
 		}
-		res.append(]);
+		res.append(']');
 		return res.toString();
 	}
 
-	// Since these next few REs are constant, we can use the "flyweight"
+	// Since these next few RE's are constant, we can use the "flyweight"
 	// Design Pattern for them - we only need one instance of each, ever.
 	// This can NOT, of course, extend to multipliers like * + ?
-	// Some of them are subclassed right here, since we dont need
+	// Some of them are subclassed right here, since we don't need
 	// to make a named class for something as simple as begin-of-line.
 
 	/** The "flyweight" SE for \w */
@@ -265,7 +265,7 @@ public class RE {
 		public boolean amatch(String ln, Int i) {
 			if (i.get()>0)
 				return false;
-			// no i.incr() since we dont use any chars in ln
+			// no i.incr() since we don't use any chars in ln
 			return true;
 		}
 	};
@@ -274,7 +274,7 @@ public class RE {
 		public String toString() { return "EOL"; }
 		public boolean amatch(String ln, Int i) {
 			if (i.get() == ln.length()) {
-				// no i.incr() since we dont use any chars in ln
+				// no i.incr() since we don't use any chars in ln
 				return true;
 			}
 			return false;
@@ -375,7 +375,7 @@ public class RE {
 		int lastStart = 0;		// to build a Match at the end.
 
 		// Try patt starting at each char position in line.
-		// i gets incr()d by each amatch() to skip over what it looks at.
+		// i gets incr()'d by each amatch() to skip over what it looks at.
 		i.set(il = 0);
 		do {
 			Debug.println("doMatch", "doMatch: il="+il);
@@ -408,35 +408,35 @@ public class RE {
 	 */
 	protected static SE esc(String a, Int i) {
 		char c = a.charAt(i.get());
-		if (c != \\)					// non-escaped character.
+		if (c != '\\')					// non-escaped character.
 			return new SEchar(c);
 		if (i.get() >= a.length())
-			return new SEchar(\\);	/* not special at end */
+			return new SEchar('\\');	/* not special at end */
 		i.incr();
 		c = a.charAt(i.get());
 		switch (c) {
 		case DIGIT:
 			return myDigits;
-		case D:
+		case 'D':
 			return myNOTDigits;
-		case n:
-			return new SEchar(\n);
-		case r:
-			return new SEchar(\r);
+		case 'n':
+			return new SEchar('\n');
+		case 'r':
+			return new SEchar('\r');
 		case SPACE:
 			return mySpaces;
-		case S:
+		case 'S':
 			return myNOTSpaces;
 		case TAB:
-			return new SEchar(\t);
-		case u:
+			return new SEchar('\t');
+		case 'u':
 			// assume followed by 4-digit hex string for Unicode character.
 			String hex = a.substring(i.get()+1, i.get()+5);
 			i.incr(4);
 			return new SEchar((char)Integer.parseInt(hex, 16)); 
 		case WORDCHAR:
 			return myWordChars;
-		case W:
+		case 'W':
 			return myNOTWordChars;
 		case LITCHAR:
 			return new SEchar(LITCHAR);

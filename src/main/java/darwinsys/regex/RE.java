@@ -204,7 +204,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" SE for \D */
-	protected static SE myDigits = new SE() {
+	protected static SE myNOTDigits = new SE() {
 		public boolean amatch(String a, Int i) {
 			boolean match = !Character.isDigit(a.charAt(i.get()));
 			if (match) i.incr();
@@ -217,7 +217,7 @@ public class RE {
 	/** The "flyweight" SE for \f */
 	protected static SE myFloatChars = new SEccl("[0-9ef.]", new Int(0));
 	/** The "flyweight" SE for \F */
-	protected static SE myFloatChars = new SEccl("[^0-9ef.]", new Int(0));
+	protected static SE myNOTFloatChars = new SEccl("[^0-9ef.]", new Int(0));
 	/** The "flyweight" SE for \s */
 	protected static SE mySpaces = new SE() {
 		public boolean amatch(String a, Int i) {
@@ -230,7 +230,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" SE for \S */
-	protected static SE mySpaces = new SE() {
+	protected static SE myNOTSpaces = new SE() {
 		public boolean amatch(String a, Int i) {
 			boolean match = !Character.isWhitespace(a.charAt(i.get()));
 			if (match) i.incr();

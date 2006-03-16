@@ -1,4 +1,4 @@
-package com.darwinsys.regexp;
+package com.darwinsys.regex;
 
 /** SEor represents an "or" condition, as in verdi|wagner
  * @author Ian Darwin, http://www.darwinsys.com/

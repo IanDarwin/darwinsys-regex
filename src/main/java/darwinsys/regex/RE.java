@@ -1,11 +1,12 @@
-package com.darwinsys.regexp;
+package com.darwinsys.regex;
 
 import com.darwinsys.util.Debug;
 import java.util.*;
 
 /**
- * A small regular expressions package for Java.
- * <P>
+ * A small regular expressions package for Java;
+ * <em>Too slow for production use!</em>
+ * <p>
  * This is a pretty simple implementation, compiling the pattern
  * into an array of sub-expression (SE) objects, and interpreting it. 
  * It is more intended to be pedantic than efficient: as Henry Spencer
@@ -109,7 +110,7 @@ public class RE {
 	public static boolean match(String patt, String str) throws RESyntaxException {
 		synchronized(singleton) {
 			SE[] thispat = singleton.compile(patt);
-			return singleton.doMatch(thispat, str, false);
+			return RE.doMatch(thispat, str, false);
 		}
 	}
 	
@@ -121,7 +122,7 @@ public class RE {
 	public static Match getMatch(String patt, String str){
 		synchronized(singleton) {
 			SE[] thispat = singleton.compile(patt);
-			return singleton.getMatch(thispat, str, false);
+			return RE.getMatch(thispat, str, false);
 		}
 	}
 
@@ -159,7 +160,7 @@ public class RE {
 	public static String sub(String patt, String inString, String RHS) {
 		synchronized(singleton) {
 			SE[] thispat = singleton.compile(patt);
-			return singleton.doSubst(thispat, inString, RHS);
+			return RE.doSubst(thispat, inString, RHS);
 		}
 	}
 		
@@ -297,14 +298,11 @@ public class RE {
 	 */
 	protected SE[] compile(String arg) throws RESyntaxException {
 		Int i = new Int();	// arg index
-		int j = 0,	// patt "index"
-			lastj = 0, lj = 0;
 		boolean done = false;
-		Vector v = new Vector();
+		Vector<SE> v = new Vector<SE>();
 
 		while (!done && i.get()<arg.length()) {
 			char c = arg.charAt(i.get());
-			lj = j;
 			if (c == ANY) {
 				v.addElement(myAny);
 			// "^" only special at beginning.
@@ -355,7 +353,6 @@ public class RE {
 				// the special \-escape characters.
 				v.addElement(esc(arg, i));
 			}
-			lastj = lj;
 			if (!done) i.incr();
 		} 
 		if (done) {				/* finished early */

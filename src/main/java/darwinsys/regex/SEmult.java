@@ -1,4 +1,4 @@
-package com.darwinsys.regexp;
+package com.darwinsys.regex;
 
 import com.darwinsys.util.Debug;
 

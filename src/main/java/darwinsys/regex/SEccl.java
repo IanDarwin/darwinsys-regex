@@ -21,8 +21,7 @@ public class SEccl extends SE {
 
 	/** Construct a CCL. Some of this code was in "getCCL()" */
 	public SEccl(String arg, Int i) {
-		int jstart;
-
+		
 		i.incr();			/* skip over '[' */
 		if (i.get()>=arg.length())
 			throw new RESyntaxException("pattern ends with [");

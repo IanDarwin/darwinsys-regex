@@ -1,4 +1,5 @@
 # These tests are from Henry Spencer's RegExp package.
+# pattern testdata expect<y,n,c> foo foo
 abc	abc	y	&	abc
 abc	xbc	n	-	-
 abc	axc	n	-	-

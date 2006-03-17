@@ -1,4 +1,5 @@
 # Tests made up by Ian Darwin.
+# pattern testdata expect
 a	a	y
 a	b	n
 # variations on "ny" in "any"

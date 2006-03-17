@@ -30,7 +30,7 @@ import com.darwinsys.regex.RESyntaxException;
  */
 public class RunScriptedTests extends TestSuite {
 
-	private String[] fileNames = { "tests", "mytests" };
+	private String[] fileNames = { "tests.txt", "mytests.txt" };
 	
 	public static Test suite() throws Exception {
 		TestSuite suite = new TestSuite("Test for regress");
@@ -55,15 +55,15 @@ public class RunScriptedTests extends TestSuite {
 			throw new IllegalStateException("called run on a TestHolder");
 		}
 
-		public TestHolder(String expect, String input, String patt) {
+		public TestHolder(String patt, String input, String expect) {
 			super();
-			this.expect = expect;
-			this.input = input;
 			this.patt = patt;
+			this.input = input;
+			this.expect = expect;
 		}	
 		@Override
 		public String toString() {
-			return String.format("TestHolder: Patt %s, Input %s, expect %s%n", patt, input, expect);
+			return String.format("TestHolder[Patt %s, Input %s, expect %s]%n", patt, input, expect);
 		}
 	}
 	
@@ -90,7 +90,10 @@ public class RunScriptedTests extends TestSuite {
 				System.err.println("INVALID INPUT: " + inputLine);
 				continue;
 			}
-			tests.add(new TestHolder(st.nextToken(), st.nextToken(), st.nextToken()));
+			String patt = st.nextToken();
+			String data = st.nextToken();
+			String expStr = st.nextToken();
+			tests.add(new TestHolder(patt, data, expStr));
         }
         is.close();
 	}
@@ -100,26 +103,23 @@ public class RunScriptedTests extends TestSuite {
 		return tests.size();
 	}
 	
-	/* Run all the tests.
+	/* Run all the tests in "tests".
 	 * @see junit.framework.Test#run(junit.framework.TestResult)
 	 */
 	@Override
 	public void run(TestResult results) {
-		for (TestHolder oneTest : tests) {
+		for (TestHolder thisTest : tests) {
 			try {
-				results.startTest(oneTest);
-				one_test(oneTest);
+				results.startTest(thisTest);
+				one_test(thisTest);
 			} catch (AssertionFailedError e) {
 				System.out.println("Caught " + e);
-				results.addFailure(oneTest, e);
-			} catch (RuntimeException e) {
-				System.out.println("Caught " + e);
-				results.addFailure(oneTest, new AssertionFailedError(e.toString()));
+				results.addFailure(thisTest, e);
 			} catch (Throwable t) {
 				System.out.println("Caught " + t);
-				results.addError(oneTest, t);
+				results.addError(thisTest, t);
 			} finally {
-				results.endTest(oneTest);
+				results.endTest(thisTest);
 			}
 		}
 	}
@@ -127,9 +127,11 @@ public class RunScriptedTests extends TestSuite {
 	protected static String passedMessage = "Success";
 	protected static String failedMessage = "FAILURE";
 
+	/**
+	 * Actually run the Test!
+	 */
 	public static void one_test(TestHolder test) throws Exception {
-		System.out.print("TEST " + test.patt + "; " +
-			test.input + "; expect " + test.expect + ' ');
+		System.out.print(test);
 		char expect = test.expect.charAt(0);
 		RE re;
 		try {
@@ -142,13 +144,15 @@ public class RunScriptedTests extends TestSuite {
 			}
 			return;
 		}
-		System.out.println("PATTERN WAS " + re);
+		if (expect == 'c' /* && we are still her */) {
+			throw new AssertionFailedError("Pattern compiled, but expected it to fail(c)");
+		}
 		boolean matched = re.match(test.input);
 		
 		if (matched == (expect == 'y')) {
 			System.out.println(passedMessage);
 		} else {
-			throw new RuntimeException("FAILED: " + test);
+			throw new AssertionFailedError(failedMessage + ": " + test);
 		}
 
 	}

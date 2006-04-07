@@ -195,7 +195,7 @@ public class RE {
 	// to make a named class for something as simple as begin-of-line.
 
 	/** The "flyweight" SE for \w */
-	protected static SE myWordChars = new SE() {
+	protected static final SE myWordChars = new SE() {
 		public boolean amatch(String a, Int i) {
 			boolean match = Character.isLetterOrDigit(a.charAt(i.get()));
 			if (match) i.incr();
@@ -206,7 +206,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" SE for \W */
-	protected static SE myNOTWordChars = new SE() {
+	protected static final SE myNOTWordChars = new SE() {
 		public boolean amatch(String a, Int i) {
 			boolean match = !Character.isLetterOrDigit(a.charAt(i.get()));
 			if (match) i.incr();
@@ -217,7 +217,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" SE for \d */
-	protected static SE myDigits = new SE() {
+	protected static final SE myDigits = new SE() {
 		public boolean amatch(String a, Int i) {
 			boolean match = Character.isDigit(a.charAt(i.get()));
 			if (match) i.incr();
@@ -228,7 +228,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" SE for \D */
-	protected static SE myNOTDigits = new SE() {
+	protected static final SE myNOTDigits = new SE() {
 		public boolean amatch(String a, Int i) {
 			boolean match = !Character.isDigit(a.charAt(i.get()));
 			if (match) i.incr();
@@ -239,7 +239,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" SE for \s */
-	protected static SE mySpaces = new SE() {
+	protected static final SE mySpaces = new SE() {
 		public boolean amatch(String a, Int i) {
 			boolean match = Character.isWhitespace(a.charAt(i.get()));
 			if (match) i.incr();
@@ -250,7 +250,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" SE for \S */
-	protected static SE myNOTSpaces = new SE() {
+	protected static final SE myNOTSpaces = new SE() {
 		public boolean amatch(String a, Int i) {
 			boolean match = !Character.isWhitespace(a.charAt(i.get()));
 			if (match) i.incr();
@@ -261,7 +261,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" for "." */
-	protected static SE myAny = new SE() {
+	protected static final SE myAny = new SE() {
 		public String toString() { return "SE(.)"; }
 		public boolean amatch(String ln, Int i) {
 			if (ln.length() >= i.get())
@@ -271,7 +271,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" for "^" */
-	protected static SE myBOL = new SE() {
+	protected static final SE myBOL = new SE() {
 		public String toString() { return "BOL"; }
 		public boolean amatch(String ln, Int i) {
 			if (i.get()>0)
@@ -281,7 +281,7 @@ public class RE {
 		}
 	};
 	/** The "flyweight" for "$" */
-	protected static SE myEOL = new SE() {
+	protected static final SE myEOL = new SE() {
 		public String toString() { return "EOL"; }
 		public boolean amatch(String ln, Int i) {
 			if (i.get() == ln.length()) {

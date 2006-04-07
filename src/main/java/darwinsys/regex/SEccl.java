@@ -11,7 +11,6 @@ package com.darwinsys.regex;
  * $Id$
  */
 public class SEccl extends SE {
-	int len = 0;
 	boolean negate = false;
 	StringBuffer val = new StringBuffer();
 
@@ -30,7 +29,7 @@ public class SEccl extends SE {
 			i.incr();
 		}
 		// Expand the range
-		len = doDash(arg, i);
+		doDash(arg, i);
 		if (arg.charAt(i.get()) != RE.CCLEND)
 			throw new RESyntaxException("CCL ends without ]");
 	}

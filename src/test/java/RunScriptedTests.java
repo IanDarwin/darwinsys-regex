@@ -42,7 +42,7 @@ public class RunScriptedTests extends TestSuite {
 	
 	private List<TestHolder> tests = new ArrayList<TestHolder>();
 	
-	class TestHolder implements Test {
+	static class TestHolder implements Test {
 		String patt;
 		String input;
 		String expect;	// Should make an enum?
@@ -124,8 +124,8 @@ public class RunScriptedTests extends TestSuite {
 		}
 	}
 
-	protected static String passedMessage = "Success";
-	protected static String failedMessage = "FAILURE";
+	protected static final String passedMessage = "Success";
+	protected static final String failedMessage = "FAILURE";
 
 	/**
 	 * Actually run the Test!

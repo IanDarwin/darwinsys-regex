@@ -13,9 +13,9 @@ public class SEmult extends SE {
 	/** The constant meaning no upper bound. */
 	public final static int NOMAX = Integer.MAX_VALUE;
 	/** The minimum number of times that must match */
-	int minimum;
+	int minimum = 0;
 	/** The maximum number number of times allowed for a match */
-	int maximum;
+	int maximum = 0;
 	/** What SubExpression is this a closure of? */
 	SE target;
 

@@ -5,6 +5,8 @@ package com.darwinsys.regex;
  */
 public class RESyntaxException extends RuntimeException {
 
+	private static final long serialVersionUID = 2025779923950692489L;
+
 	/** Construct an RESyntaxException with a message */
 	public RESyntaxException(String mesg) {
 		super(mesg);

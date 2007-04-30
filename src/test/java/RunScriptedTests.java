@@ -115,7 +115,7 @@ public class RunScriptedTests extends TestSuite {
 			} catch (AssertionFailedError e) {
 				System.out.println("Caught " + e);
 				results.addFailure(thisTest, e);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				System.out.println("Caught " + t);
 				results.addError(thisTest, t);
 			} finally {

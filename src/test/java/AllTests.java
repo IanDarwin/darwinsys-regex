@@ -9,7 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(value=Suite.class)
 @SuiteClasses(value={
 	RETest.class,
-	RunScriptedTests.class,
+	RunScriptedTests.class
 })
 public class AllTests {
 	// No Code Needed

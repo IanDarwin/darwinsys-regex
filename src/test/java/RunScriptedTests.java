@@ -1,7 +1,7 @@
 package com.darwinsys.regex_regress;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -33,7 +33,7 @@ public class RunScriptedTests extends TestSuite {
 	private String[] fileNames = { "tests.txt", "mytests.txt" };
 	
 	public static Test suite() throws Exception {
-		TestSuite suite = new TestSuite("Test for regress");
+		TestSuite suite = new TestSuite("Scripted Test for c.d.regex");
 		//$JUnit-BEGIN$
 		suite.addTest(new RunScriptedTests());
 		//$JUnit-END$
@@ -78,7 +78,8 @@ public class RunScriptedTests extends TestSuite {
 	}
 	
 	private void readTests(String fileName) throws Exception {		
-		BufferedReader is = new BufferedReader(new FileReader(fileName));
+		BufferedReader is = new BufferedReader(
+				new InputStreamReader(getClass().getResourceAsStream(fileName)));
         String inputLine;
 
         while ((inputLine = is.readLine()) != null) {
@@ -144,7 +145,7 @@ public class RunScriptedTests extends TestSuite {
 			}
 			return;
 		}
-		if (expect == 'c' /* && we are still her */) {
+		if (expect == 'c' /* && we are still here */) {
 			throw new AssertionFailedError("Pattern compiled, but expected it to fail(c)");
 		}
 		boolean matched = re.match(test.input);

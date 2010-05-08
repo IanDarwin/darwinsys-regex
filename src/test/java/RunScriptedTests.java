@@ -1,5 +1,3 @@
-package com.darwinsys.regex_regress;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -11,12 +9,12 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-import com.darwinsys.regex.RE;
-import com.darwinsys.regex.RESyntaxException;
+import darwinsys.regex.RE;
+import darwinsys.regex.RESyntaxException;
 
 
 /*
- * JUnit test runner for running scripted tests for com.darwinsys.regex.
+ * JUnit test runner for running scripted tests for darwinsys.regex.
  * Each RE is compiled and printed, .match()ed against the string, and
  * the result is applied to output using regsub().
  *Each of the input files named in "fileNames" must contain of lines with

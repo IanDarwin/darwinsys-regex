@@ -1,4 +1,4 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
 /** An unchecked Exception representing a syntax error 
  * in an RE pattern.

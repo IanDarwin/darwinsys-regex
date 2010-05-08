@@ -1,4 +1,4 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
 public abstract class Pattern {
 	// XXX to be defined.

@@ -1,6 +1,6 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
-import com.darwinsys.util.Debug;
+import java.util.logging.*;
 
 /** SEmult represents one multiplier (aka "Closure", "quantifier", repetition).
  * The four forms in the RE input, * ? + and {m,n}, are all
@@ -10,6 +10,9 @@ import com.darwinsys.util.Debug;
  * $Id$
  */
 public class SEmult extends SE {
+	
+	protected static Logger logger = Logger.getLogger("darwinsys.regex");
+	
 	/** The constant meaning no upper bound. */
 	public final static int NOMAX = Integer.MAX_VALUE;
 	/** The minimum number of times that must match */
@@ -42,7 +45,7 @@ public class SEmult extends SE {
 
 	/** Match target at ln[i], multiple times */
 	public boolean amatch(String ln, Int i) {
-		Debug.println("SEmult", "SEmult amatch() called on " + ln.charAt(i.get()));
+		logger.fine("SEmult amatch() called on " + ln.charAt(i.get()));
 		boolean metMin = minimum == 0; // if 0 minimum, already met minimum.
 		for (int j=minimum; j<maximum && i.get()<ln.length(); j++) {
 			if (!target.amatch(ln, i))

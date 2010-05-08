@@ -1,8 +1,6 @@
-package com.darwinsys.regex_regress;
-
 import junit.framework.TestCase;
 
-import com.darwinsys.regex.RE;
+import darwinsys.regex.RE;
 
 /**
  * Not test again, but test RE.

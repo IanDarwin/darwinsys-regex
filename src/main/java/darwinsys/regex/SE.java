@@ -1,4 +1,4 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
 /** Represent one sub-expression in an RE.
  * @author Ian Darwin, http://www.darwinsys.com/

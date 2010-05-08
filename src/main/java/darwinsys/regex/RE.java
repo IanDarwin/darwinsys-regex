@@ -1,7 +1,7 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
-import com.darwinsys.util.Debug;
 import java.util.*;
+import java.util.logging.*;
 
 /**
  * A small regular expressions package for Java;
@@ -80,6 +80,8 @@ public class RE {
 
 	protected SE[] myPat; 
 	protected String origPatt;
+	
+	protected static Logger logger = Logger.getLogger("darwinsys.regex");
 
 	//+
 	//-----------------------------------------------------
@@ -343,7 +345,7 @@ public class RE {
 				int max = 0;
 				if (second.length() > 0)
 					max = Integer.parseInt(second);
-				Debug.println("SEmult", "Compile: " + min + "," + max);
+				logger.fine("Compile: " + min + "," + max);
 				// Now replace the target with a MULT referring to it.
 				int last = v.size()-1;
 				SE mult = new SEmult(min, max, (SE)v.elementAt(last));
@@ -385,11 +387,11 @@ public class RE {
 		// i gets incr()'d by each amatch() to skip over what it looks at.
 		i.set(il = 0);
 		do {
-			Debug.println("doMatch", "doMatch: il="+il);
+			logger.fine("doMatch: il="+il);
 			failed = false;
 			lastStart = il;
 			for (int ip=0; ip<patt.length; ip++) {
-				Debug.println("doMatch", "doMatch: ip="+ip);
+				logger.fine("doMatch: ip="+ip);
 				if (!patt[ip].amatch(line, i)) {
 					failed = true;
 					break;		// out of inner loop
@@ -397,12 +399,12 @@ public class RE {
 			}
 			// If matched all elements of patt, we have ignition!
 			if (!failed) {
-				Debug.println("doMatch", "doMatch() all patt at " +il+ "; return true");
+				logger.fine("doMatch() all patt at " +il+ "; return true");
 				return new Match(lastStart, i.get());
 			}
 			il++; i.set(il);
 		} while (il<line.length());
-		Debug.println("doMatch", "doMatch: Got to end so return " + !failed);
+		logger.fine("doMatch: Got to end so return " + !failed);
 		if (!failed)
 			throw new IllegalArgumentException("!failed but not returned");
 		return null;

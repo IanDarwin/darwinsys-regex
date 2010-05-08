@@ -1,4 +1,4 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
 /** A Match describes one position at which a RE matches a String.
  * Note that all constructors are protected, since this class is only

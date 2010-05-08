@@ -1,12 +1,15 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
-import com.darwinsys.util.Debug;
+import java.util.logging.*;
 
 /* SEchar - represent one ordinary character.
  * @author Ian Darwin, http://www.darwinsys.com/
  * $Id$
  */
 public class SEchar extends SE {
+	
+	protected static Logger logger = Logger.getLogger("darwinsys.regex");
+	
 	char val;
 
 	public SEchar(char ch) { val = ch; }
@@ -17,15 +20,15 @@ public class SEchar extends SE {
 	 * @return true iff ln.charAt(i)==the character we were constructed with.
 	 */
 	public boolean amatch(String ln, Int i) {
-		Debug.println("SEchar", "SEchar.amatch("+ln+','+i.get() + "), want " + val);
+		logger.fine("SEchar.amatch("+ln+','+i.get() + "), want " + val);
 		if (i.get() < ln.length()) {
 			boolean success = (ln.charAt(i.get()) == val);
-			Debug.println("SEchar", "SEchar.amatch: success="+success);
+			logger.fine("SEchar.amatch: success="+success);
 			if (success)
 				i.incr();
 			return success;
 		} 
-		Debug.println("SEchar", "SEchar.amatch: hit end of string");
+		logger.fine("SEchar.amatch: hit end of string");
 		return false;					// end of string
 	}
 }

@@ -1,4 +1,4 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
 /** SEccl represents one Character Class, or list of characters
  * inside square brackets.  Construct with a list; the constructor

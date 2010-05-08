@@ -1,4 +1,4 @@
-package com.darwinsys.regex;
+package darwinsys.regex;
 
 /** 
  * Tiny class for passing integer in AND getting its updated value back.

@@ -1,0 +1,40 @@
+<project name="regex - Ian's toy regex package" default="regress">
+
+	<!-- set global properties for this build -->
+	<property name="src" value="src"/>
+	<property name="build" value="build"/>
+	<property name="libdir" value="lib"/>
+	<property name="regress" value="regress"/>
+
+	<property file="${user.home}/build.properties"/>
+	<property file="build.properties"/>
+
+	<property name="junit.jar" value="${lib}/lib/junit-4.4.jar"/>
+
+	<target name="init">
+		<tstamp/>
+		<mkdir dir="${build}"/>
+	</target>
+
+	<!-- compile everything -->
+	<target name="build" depends="init" description="compile all">
+		<javac srcdir="${src}" destdir="${build}"/>
+		<javac srcdir="${regress}" destdir="${build}" classpath="${junit.jar}"/>
+	</target>
+
+	<target name="regress" depends="build" description="run unit tests">
+		<junit printsummary="yes" fork="yes" haltonfailure="yes">
+			<classpath>
+				<fileset dir="${libdir}">
+					<include name="*.jar"/>
+				</fileset>
+				<dirset dir=".">
+					<include name="${build}"/>
+				</dirset>
+			</classpath>
+			<formatter type="plain" />
+			<test name="AllTests" />
+		</junit>
+	</target>
+
+</project>

@@ -14,7 +14,7 @@ import darwinsys.regex.RESyntaxException;
 
 
 /*
- * JUnit test runner for running scripted tests for darwinsys.regex.
+ * JUnit 3.8 test runner for running scripted tests for darwinsys.regex.
  * Each RE is compiled and printed, .match()ed against the string, and
  * the result is applied to output using regsub().
  *Each of the input files named in "fileNames" must contain of lines with

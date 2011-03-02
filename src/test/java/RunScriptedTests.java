@@ -17,7 +17,7 @@ import darwinsys.regex.RESyntaxException;
  * JUnit 3.8 test runner for running scripted tests for darwinsys.regex.
  * Each RE is compiled and printed, .match()ed against the string, and
  * the result is applied to output using regsub().
- *Each of the input files named in "fileNames" must contain of lines with
+ * Each of the input files named in "fileNames" must consist of lines with
  * five fields:  a r.e., a string to match it against, a result code, a
  * source string for regsub, and the proper result.  Result codes are 'c'
  * for compile failure, 'y' for match success, 'n' for match failure.
@@ -40,10 +40,29 @@ public class RunScriptedTests extends TestSuite {
 	
 	private List<TestHolder> tests = new ArrayList<TestHolder>();
 	
+	enum Expected {
+		COMPILE_FAIL('c'),
+		MATCH_SUCCESS('y'),
+		MATCH_FAILURE('n');
+		private char c;
+
+		Expected(char c) {
+			this.c = c;
+		}
+		
+		public Expected valueOf(char c) {
+			for (Expected e : values()) {
+				if (e.c == c) {
+					return e;
+				}
+			}
+			throw new IllegalArgumentException(c + " not a valid Expected value");
+		}
+	}
 	static class TestHolder implements Test {
 		String patt;
 		String input;
-		String expect;	// Should make an enum?
+		String expect;	// XXX use enum
 
 		public int countTestCases() {
 			return 1;

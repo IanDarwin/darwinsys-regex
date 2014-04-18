@@ -1,10 +1,10 @@
 <project name="regex - Ian's toy regex package" default="regress">
 
 	<!-- set global properties for this build -->
-	<property name="src" value="src"/>
+	<property name="src" value="src/main/java"/>
+	<property name="regress" value="src/test/java"/>
 	<property name="build" value="build"/>
 	<property name="libdir" value="lib"/>
-	<property name="regress" value="regress"/>
 
 	<property file="${user.home}/build.properties"/>
 	<property file="build.properties"/>

@@ -1,5 +1,5 @@
-Regular Expressions API
-Ian Darwin ianatdarwinsysdotcom
+== Regular Expressions API
+Ian Darwin
 
 This is a tiny litle NFA-style regex implementation,
 done by Ian darwin many years ago as a proof-of-concept

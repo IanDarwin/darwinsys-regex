@@ -24,23 +24,21 @@ How Regular Expressions Work
 </tr>
 </table>
 <p>
-The matching code in doMatch() simply &quot;walks&quot; the pattern, comparing each token in the pattern to see if there is one or more characters that match it. Accordingly, the two main routines are called <em>
-compile</em>
- and <em>
-match</em>
-. <em>
-Compile</em>
- is <em>
-static</em>
- so that it can be called from the static compile-and-match method used in <i>Using regular expressions in Java.</i>.  It is called from the constructor in a non-static context, but since it simply returns the constructed pattern, it works as well in either type of context. </p>
+The matching code in doMatch() simply &quot;walks&quot; the pattern, comparing each token 
+in the pattern to see if there is one or more characters that match it. 
+Accordingly, the two main routines are called <em> compile</em> and <em> match</em>.
+<em> Compile</em> is <em> static</em> so that it can be called from the static 
+compile-and-match method used in <i>Using regular expressions in Java.</i>. 
+It is called from the constructor in a non-static context, but since it simply returns the constructed pattern, 
+it works as well in either type of context. </p>
 <p>
-The compiled pattern is interesting. The regular expression is broken down into a series of sub-expressions, and stored as an array of SE objects. Each character, or metacharacter, ^, $, ., multiplier, etc., is represented by an <em>
-SE</em>
-. The abstract class <em>
-<a href="SE.java">SE</a></em>
- provides an <em>
-amatch()</em>
- method to see if there is a match between the string we're examining and the current sub-expression. </p>
+The compiled pattern is interesting. The regular expression is
+broken down into a series of sub-expressions, and stored as an array
+of SE objects. Each character, or metacharacter, ^, $, ., multiplier,
+etc., is represented by an <em> SE</em> . The abstract class <em>
+<a href="SE.java">SE</a></em> provides an <em> amatch()</em>
+method to see if there is a match between the string we're examining
+and the current sub-expression. </p>
 <p>There are several subclasses of SE:
 </p><ul>
 <li><a href="SEccl.java">SEccl.java</a>, represents a character class</li>

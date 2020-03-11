@@ -1,20 +1,23 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import junit.framework.AssertionFailedError;
-import junit.framework.Test;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import darwinsys.regex.RE;
 import darwinsys.regex.RESyntaxException;
 
-
 /*
- * JUnit 3.8 test runner for running scripted tests for darwinsys.regex.
+ * JUnit test runner for running scripted tests for darwinsys.regex.
  * Each RE is compiled and printed, .match()ed against the string, and
  * the result is applied to output using regsub().
  * Each of the input files named in "fileNames" must consist of lines with
@@ -24,26 +27,18 @@ import darwinsys.regex.RESyntaxException;
  * Field separator is tab.
  * @author Ian Darwin, http://www.darwinsys.com/ - this program
  * @author Henry Spencer, henry@zoo.toronto.edu - test file of 127 RE tests
- * @version $Id$
  */
-public class RunScriptedTests extends TestSuite {
+@RunWith(Parameterized.class)
+public class RunScriptedTest {
 
-	private String[] fileNames = { "tests.txt", "mytests.txt" };
-	
-	public static Test suite() throws Exception {
-		TestSuite suite = new TestSuite("Scripted Test for c.d.regex");
-		//$JUnit-BEGIN$
-		suite.addTest(new RunScriptedTests());
-		//$JUnit-END$
-		return suite;
-	}
-	
-	private List<TestHolder> tests = new ArrayList<TestHolder>();
+	private static String[] fileNames = { "tests.txt", "mytests.txt" };
+	private TestHolder testHolder;
 	
 	enum Expected {
 		COMPILE_FAIL('c'),
 		MATCH_SUCCESS('y'),
 		MATCH_FAILURE('n');
+
 		private char c;
 
 		Expected(char c) {
@@ -59,44 +54,55 @@ public class RunScriptedTests extends TestSuite {
 			throw new IllegalArgumentException(c + " not a valid Expected value");
 		}
 	}
-	static class TestHolder implements Test {
+
+	static class TestHolder {
 		String patt;
 		String input;
-		String expect;	// XXX use enum
-
-		public int countTestCases() {
-			return 1;
-		}
-
-		public void run(TestResult arg0) {
-			throw new IllegalStateException("called run on a TestHolder");
-		}
+		String expect;  // XXX use enum
 
 		public TestHolder(String patt, String input, String expect) {
 			super();
 			this.patt = patt;
 			this.input = input;
 			this.expect = expect;
-		}	
+		}       
+
 		@Override
 		public String toString() {
-			return String.format("TestHolder[Patt %s, Input %s, expect %s]%n", patt, input, expect);
+			return String.format("Test[Patt %s, Input %s, expect %s]", patt, input, expect);
 		}
 	}
-	
-	
+
 	/**
-	 * Constructor, read the test Files so countTestCases will work.
+	 * Static block, read the test Files so countTestCases will work.
 	 */
-	public RunScriptedTests() throws Exception {
-		for (String fileName : fileNames) {
-			readTests(fileName);
+	static {
+		System.out.println("Static initializer");
+		tests = new ArrayList<TestHolder>();
+		try {
+			for (String fileName : fileNames) {
+				readTests(fileName);
+			}
+		} catch (IOException ex) {
+			fail(ex.toString());
 		}
 	}
-	
-	private void readTests(String fileName) throws Exception {		
+
+	private static List<TestHolder> tests;
+
+	@Parameters(name="{0}")
+	public static TestHolder[] getTests() {
+		System.out.printf("getTests: n = %d\n", tests.size());
+		return tests.toArray(new TestHolder[tests.size()]);
+	}
+
+	public RunScriptedTest(TestHolder the) {
+		this.testHolder = the;
+	}
+
+	private static void readTests(String fileName) throws IOException {		
 		BufferedReader is = new BufferedReader(
-				new InputStreamReader(getClass().getResourceAsStream(fileName)));
+				new InputStreamReader(RunScriptedTest.class.getResourceAsStream("/" + fileName)));
         String inputLine;
 
         while ((inputLine = is.readLine()) != null) {
@@ -116,63 +122,41 @@ public class RunScriptedTests extends TestSuite {
         is.close();
 	}
 	
-	@Override
-	public int countTestCases() {
-		return tests.size();
-	}
-	
-	/* Run all the tests in "tests".
-	 * @see junit.framework.Test#run(junit.framework.TestResult)
-	 */
-	@Override
-	public void run(TestResult results) {
-		for (TestHolder thisTest : tests) {
-			try {
-				results.startTest(thisTest);
-				one_test(thisTest);
-			} catch (AssertionFailedError e) {
-				System.out.println("Caught " + e);
-				results.addFailure(thisTest, e);
-			} catch (Exception t) {
-				System.out.println("Caught " + t);
-				results.addError(thisTest, t);
-			} finally {
-				results.endTest(thisTest);
-			}
-		}
-	}
-
 	protected static final String passedMessage = "Success";
 	protected static final String failedMessage = "FAILURE";
 
 	/**
 	 * Actually run the Test!
 	 */
-	public static void one_test(TestHolder test) throws Exception {
-		System.out.print(test);
-		char expect = test.expect.charAt(0);
+	@Test
+	public void one_test() throws Exception {
+		System.out.print(testHolder);
+
+		// First we check the pattern's compilation
+		char expect = testHolder.expect.charAt(0);
 		RE re;
 		try {
-			re = new RE(test.patt);
-		} catch (RESyntaxException e) {
+			re = new RE(testHolder.patt);
+		} catch (RESyntaxException resx) {
 			boolean success = (expect == 'c');
 			// If we expected success but got failure, throw.
 			if (!success) {				
-				throw(e);
+				fail("Unexpected regex compilation failure: " + resx);
 			}
 			return;
 		}
 		if (expect == 'c' /* && we are still here */) {
-			throw new AssertionFailedError("Pattern compiled, but expected it to fail(c)");
+			fail("Pattern compiled, but expected it to fail(c)");
 		}
-		boolean matched = re.match(test.input);
+
+		// Now test the match itself
+		boolean matched = re.match(testHolder.input);
 		
 		if (matched == (expect == 'y')) {
 			System.out.println(passedMessage);
 		} else {
-			throw new AssertionFailedError(failedMessage + ": " + test);
+			fail(failedMessage + ": " + testHolder);
 		}
 
 	}
-
 }

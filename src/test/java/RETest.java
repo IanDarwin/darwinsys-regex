@@ -1,18 +1,19 @@
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
+import org.junit.Test;
 import darwinsys.regex.RE;
+
 
 /**
  * Not test again, but test RE.
  * No need for exhaustive tests here; this is to test out the
  * different constructors and method invocations.
  * @author Ian F. Darwin, http://www.darwinsys.com/
- * @version $Id$
- * @see	Test.java, which runs many many RE tests.
  */
-public class RETest extends TestCase {
+public class RETest {
 	
-	public static void testOne() {
+	@Test
+	public void testOne() {
 		//+
 		RE r = new RE("^A");
 		assertTrue(r.match("Apples"));

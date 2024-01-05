@@ -1,6 +1,5 @@
 == Regular Expressions API
-Ian Darwin
 
 This is a tiny litle NFA-style regex implementation,
-done by Ian darwin many years ago as a proof-of-concept
-and never quite finished.
+done by Ian Darwin many years ago as a proof-of-concept
+and never fully polished.

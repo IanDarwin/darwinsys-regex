@@ -3,3 +3,6 @@
 This is a tiny litle NFA-style regex implementation,
 done by Ian Darwin many years ago as a proof-of-concept
 and never fully polished.
+
+Status: 66 of 150 tests (based on Henry Spencer's rigorous tests for his regex package) did not pass.
+That is 84 tests that did pass, at least.
